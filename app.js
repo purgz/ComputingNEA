@@ -9,10 +9,10 @@ const{ Server } = require("socket.io");
 
 //caching connection to database -- free mysql hosting
 const db = mysql.createConnection({
-    host:"sql4.freemysqlhosting.net",
-    user:"sql4440466",
-    password:"dKkJnMdu1p",
-    database:"sql4440466"
+    host:"localhost",
+    user:"root",
+    password:"",
+    database:"logininfo"
 });
 
 //connect to db and throw any errors
