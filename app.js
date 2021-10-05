@@ -111,8 +111,9 @@ app.post("/createaccount",(req,res)=>{
 
 
 //-----------------------------------------------------------------------------------------------------
-//socket.io code
-var gameRooms = [];
+//socket.io / main game code
+var gameRooms = [];  //holds the games to be displayed in menu
+var Rooms = {};     //holds the live game objects for each game
 
 const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
 io.use(wrap(sessionMiddleware));
@@ -148,9 +149,11 @@ const gameNamespace = io.of("/livegame");
 gameNamespace.use(wrap(sessionMiddleware));
 gameNamespace.on("connection",(socket)=>{
     const session = socket.request.session;
-    //console.log(session.roomname)
+    
     socket.join(session.roomname);
+
     gameNamespace.to(session.roomname).emit("welcome",session.roomname);
+    gameNamespace.to(session.roomname).emit("render",GenerateDefaultPosition()); //temporary - will give the objects gamestate in future.
     
 });
 
@@ -159,3 +162,17 @@ gameNamespace.on("connection",(socket)=>{
 server.listen(3000,()=>{
     console.log("server is running on port 3000");
 })
+
+
+//generates the defualt board layout
+function GenerateDefaultPosition() {
+    return ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR",
+        "bP", "bP", "bP", "", "bP", "bP", "bP", "bP",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "wP", "", "wP", "wP", "wP", "wP", "wP", "wP",
+        "wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"
+    ];
+}

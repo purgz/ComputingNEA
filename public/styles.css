@@ -1,0 +1,38 @@
+/*styling for chess elements to create a board and pieces in the correct locations */
+img 
+{        
+    margin:auto;
+    width:100%;
+}
+.square
+{
+    width:50px;
+    height:50px;
+    border:1px solid black;
+    display:inline-block;
+    margin:-2px;
+    margin-bottom: 2px;
+    
+    text-align: center;
+    vertical-align: top;
+}
+.dark
+{
+    background-color:lightgrey;
+}
+.board
+{
+    position:absolute;
+    top:25%;
+    left:36%;
+}
+   
+/*disables people highlighting the squares */
+.disable-select 
+{
+user-select: none; /* supported by Chrome and Opera */
+-webkit-user-select: none; /* Safari */
+-khtml-user-select: none; /* Konqueror HTML */
+-moz-user-select: none; /* Firefox */
+-ms-user-select: none; /* Internet Explorer/Edge */
+}
