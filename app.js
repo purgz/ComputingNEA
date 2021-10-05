@@ -5,7 +5,12 @@ const mysql = require("mysql");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const http = require("http");
-const{ Server } = require("socket.io");
+const { Server } = require("socket.io");
+
+//creating server
+const app = express();
+const server = http.createServer(app); 
+const io = new Server(server);
 
 //caching connection to database -- free mysql hosting
 const db = mysql.createConnection({
@@ -23,10 +28,7 @@ db.connect(function(error){
     console.log("connected to database");
 });
 
-//creating server
-const app = express();
-const server = http.createServer(app); 
-const io = new Server(server);
+
 
 app.set("view-engine","ejs"); //using ejs templating engine to display dynamic pages 
 //bodyparser middleware
@@ -108,12 +110,14 @@ app.post("/createaccount",(req,res)=>{
 });
 
 
+//-----------------------------------------------------------------------------------------------------
+//socket.io code
 
-
-
-
+io.on("connection", (socket) => {
+    console.log(socket.id);
+});
 
 //start server on port 3000
-app.listen(3000,()=>{
+server.listen(3000,()=>{
     console.log("server is running on port 3000");
 })
