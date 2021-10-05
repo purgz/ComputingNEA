@@ -16,7 +16,7 @@ const io = new Server(server);
 const db = mysql.createConnection({
     host:"localhost",
     user:"root",
-    password:"",
+    password:"Hen12345",
     database:"logininfo"
 });
 
@@ -28,17 +28,16 @@ db.connect(function(error){
     console.log("connected to database");
 });
 
-
-
 app.set("view-engine","ejs"); //using ejs templating engine to display dynamic pages 
 //bodyparser middleware
 app.use(bodyParser.urlencoded({extended:true})); 
 //express session middleware
-app.use(session({
+var sessionMiddleware = session({
     secret:"secret",
-    resave:true,
-    saveUninitialized:true
-}));
+  
+})
+app.use(sessionMiddleware);
+
 app.use(express.static("public"));
 
 //get pages
@@ -73,7 +72,8 @@ app.post("/login",(req,res)=>{
         let query = db.query(sql,[username,password],(error,results)=>{
 
             if (results.length>0){
-                req.session.loggedIn = true;           
+                req.session.loggedIn = true;    
+                req.session.username = username;  
                 res.redirect("/menuPage");
             } else{
                 res.send("incorrect login");
@@ -112,10 +112,48 @@ app.post("/createaccount",(req,res)=>{
 
 //-----------------------------------------------------------------------------------------------------
 //socket.io code
+var gameRooms = [];
+
+const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
+io.use(wrap(sessionMiddleware));
 
 io.on("connection", (socket) => {
-    console.log(socket.id);
+    const session = socket.request.session;
+    //console.log(session.username)
+   
+    io.to(socket.id).emit("NewGame",gameRooms);
+    socket.on("CreateGame",()=>{
+        session.roomname = session.username;
+        gameRooms.push(session.username);
+        io.emit("NewGame",gameRooms);
+        session.save();
+    })
+
+    socket.on("JoinRoom",(roomName)=>{
+        //console.log(roomName)
+        session.roomname = roomName
+        session.save();  //means can use the session vars on multiple socket.io connections.
+    });
+
+    
 });
+
+app.get("/newGame",(req,res)=>{
+    res.render("gamePage.ejs")
+})
+
+//keeeping the same session variables over the new page which will be the live game page.
+const gameNamespace = io.of("/livegame");
+
+gameNamespace.use(wrap(sessionMiddleware));
+gameNamespace.on("connection",(socket)=>{
+    const session = socket.request.session;
+    //console.log(session.roomname)
+    socket.join(session.roomname);
+    gameNamespace.to(session.roomname).emit("welcome",session.roomname);
+    
+});
+
 
 //start server on port 3000
 server.listen(3000,()=>{
