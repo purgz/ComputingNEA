@@ -1,10 +1,5 @@
 var socket = io("/livegame");
 
-//users who join each other game get sent to the same room
-socket.on("welcome",(msg)=>{
-    console.log("roomname: "+msg);
-})
-
 //caching the html elements for each chess piece.
 //pieces -------------------------------------------------------------------------------------------------------
 const wRook = '<img id = "white rook" draggable = "true" class = "piece white" src = "/pieces/wR.png"></img>';
@@ -107,7 +102,23 @@ function RenderBoard(gamestate){
     }
 }
 
+function Orientation(colour){
+    if (colour == "black")
+    {
+        document.getElementsByClassName("board")[0].style.transform = "rotate(180deg)";
+        for (var i = 0; i < cells.length;i++)
+        {
+            cells[i].style.transform = "rotate(180deg)";
+        }                                        
+    }
+}
+
+//recives the gamestate from server and renders for the players.
 socket.on("render",(gamestate)=>{
     RenderBoard(gamestate);
     thisgamestate = gamestate;
+})
+
+socket.on("orientation",(colour)=>{
+    Orientation(colour);
 })

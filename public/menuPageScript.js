@@ -1,14 +1,16 @@
 var socket = io();
 
-
+//sends request to add game room to game list
 function NewGame(){
     socket.emit("CreateGame");
 }
+//sends the roomname to the server so the user can be connected to the game room
 function JoinRoom(name){
     console.log(name.id);
     socket.emit("JoinRoom",name.id)
     return true;
 }
+//new game is added to list - creates form element and adds attributes/actions.
 socket.on("NewGame",(games)=>{
    
     var gamelist = document.getElementById("gamelist");

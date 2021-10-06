@@ -16,7 +16,7 @@ const io = new Server(server);
 const db = mysql.createConnection({
     host:"localhost",
     user:"root",
-    password:"Hen12345",
+    password:"",
     database:"logininfo"
 });
 
@@ -152,9 +152,16 @@ gameNamespace.on("connection",(socket)=>{
     
     socket.join(session.roomname);
 
-    gameNamespace.to(session.roomname).emit("welcome",session.roomname);
+    //checks if room already exists - if not creates a new room
+    if (!Rooms.hasOwnProperty(session.roomname)){
+        Rooms[session.roomname] = new GameRoom();
+    }
+    //give users their random colours
+    session.yourColour = Rooms[session.roomname].addUsers(session.username);
+
+    console.log(Rooms)
     gameNamespace.to(session.roomname).emit("render",GenerateDefaultPosition()); //temporary - will give the objects gamestate in future.
-    
+    gameNamespace.to(socket.id).emit("orientation",session.yourColour);  //flip board if black
 });
 
 
@@ -175,4 +182,38 @@ function GenerateDefaultPosition() {
         "wP", "", "wP", "wP", "wP", "wP", "wP", "wP",
         "wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"
     ];
+}
+
+class GameRoom {
+    constructor(){
+        this.gamestate = GenerateDefaultPosition();
+        this.player1;
+        this.player2;
+        this.playerLegalMoves = [];
+        this.turn = ""; //until 2 users no colour so no one can move
+    }
+
+    //adds users to the game and gives them their session colour variables - spectators do not get colour
+    addUsers(uname){
+        if (this.player1 && this.player2){
+            return "spectator";
+        }
+        if (!(this.player1)){
+            this.player1 = uname;
+            if (Math.floor(Math.random() * 2) == 1){
+                this.player1Colour = "white";
+            } else {
+                this.player1Colour = "black";
+            }
+            return this.player1Colour;
+        } else {
+            this.player2 = uname;
+            if (this.player1Colour == "white"){
+                this.player2Colour = "black";
+            } else {
+                this.player2Colour = "white";
+            }
+            return this.player2Colour;
+        }
+    }
 }
