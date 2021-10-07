@@ -16,7 +16,7 @@ const io = new Server(server);
 const db = mysql.createConnection({
     host:"localhost",
     user:"root",
-    password:"",
+    password:"Hen12345",
     database:"logininfo"
 });
 
@@ -131,7 +131,7 @@ io.on("connection", (socket) => {
     })
 
     socket.on("JoinRoom",(roomName)=>{
-        //console.log(roomName)
+        console.log(roomName)
         session.roomname = roomName
         session.save();  //means can use the session vars on multiple socket.io connections.
     });
@@ -159,7 +159,7 @@ gameNamespace.on("connection",(socket)=>{
     //give users their random colours
     session.yourColour = Rooms[session.roomname].addUsers(session.username);
 
-    console.log(Rooms)
+    //console.log(Rooms)
     gameNamespace.to(session.roomname).emit("render",GenerateDefaultPosition()); //temporary - will give the objects gamestate in future.
     gameNamespace.to(socket.id).emit("orientation",session.yourColour);  //flip board if black
 });
