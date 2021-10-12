@@ -1,4 +1,4 @@
-var socket = io("/livegame");
+ var socket = io("/livegame");
 
 //caching the html elements for each chess piece.
 //pieces -------------------------------------------------------------------------------------------------------
@@ -21,8 +21,6 @@ var cells = document.getElementsByClassName("square");
 
 var newSquare;
 var currentCell;
-var roomName;
-var thisgamestate;
 
 document.addEventListener("dragstart",dragStart);
 document.addEventListener("dragover",dragOver);
@@ -114,9 +112,8 @@ function Orientation(colour){
 }
 
 //recives the gamestate from server and renders for the players.
-socket.on("render",(gamestate)=>{
+socket.on("Render",(gamestate)=>{
     RenderBoard(gamestate);
-    thisgamestate = gamestate;
 })
 
 socket.on("orientation",(colour)=>{

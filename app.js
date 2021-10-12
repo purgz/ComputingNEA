@@ -16,7 +16,7 @@ const io = new Server(server);
 const db = mysql.createConnection({
     host:"localhost",
     user:"root",
-    password:"Hen12345",
+    password:"",
     database:"logininfo"
 });
 
@@ -145,10 +145,10 @@ app.get("/newGame",(req,res)=>{
 
 //keeeping the same session variables over the new page which will be the live game page.
 const gameNamespace = io.of("/livegame");
-
+//adding connection detection for the live game page using different namespace
 gameNamespace.use(wrap(sessionMiddleware));
 gameNamespace.on("connection",(socket)=>{
-    const session = socket.request.session;
+    const session = socket.request.session;   
     
     socket.join(session.roomname);
 
@@ -158,10 +158,17 @@ gameNamespace.on("connection",(socket)=>{
     }
     //give users their random colours
     session.yourColour = Rooms[session.roomname].addUsers(session.username);
-
+    //console.log(session.yourColour)
     //console.log(Rooms)
-    gameNamespace.to(session.roomname).emit("render",GenerateDefaultPosition()); //temporary - will give the objects gamestate in future.
-    gameNamespace.to(socket.id).emit("orientation",session.yourColour);  //flip board if black
+
+    //initialisation emits
+    gameNamespace.to(session.roomname).emit("Render",Rooms[session.roomname].gamestate); 
+    gameNamespace.to(socket.id).emit("Orientation",session.yourColour)
+
+    //handling player moves
+    socket.on("move-request",(currentCell,newSquare)=>{
+        console.log(currentCell,newSquare);
+    });
 });
 
 
@@ -172,6 +179,7 @@ server.listen(3000,()=>{
 
 
 //generates the defualt board layout
+//each index represents a piece, each piece is notated as first letter - colour - second letter - piece
 function GenerateDefaultPosition() {
     return ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR",
         "bP", "bP", "bP", "", "bP", "bP", "bP", "bP",
@@ -185,6 +193,7 @@ function GenerateDefaultPosition() {
 }
 
 class GameRoom {
+    //instantiate room with main attributes.
     constructor(){
         this.gamestate = GenerateDefaultPosition();
         this.player1;
@@ -198,6 +207,7 @@ class GameRoom {
         if (this.player1 && this.player2){
             return "spectator";
         }
+        //randomly assinging player 1 and 2 colours white or black. spectator does not get a colour
         if (!(this.player1)){
             this.player1 = uname;
             if (Math.floor(Math.random() * 2) == 1){
