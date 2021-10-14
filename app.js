@@ -16,7 +16,7 @@ const io = new Server(server);
 const db = mysql.createConnection({
     host:"localhost",
     user:"root",
-    password:"",
+    password:"Hen12345",
     database:"logininfo"
 });
 
@@ -183,7 +183,7 @@ server.listen(3000,()=>{
 //each index represents a piece, each piece is notated as first letter - colour - second letter - piece
 function GenerateDefaultPosition() {
     return ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR",
-        "bP", "bP", "bP", "", "bP", "bP", "bP", "bP",
+        "", "bP", "bP", "", "bP", "bP", "bP", "bP",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
@@ -288,17 +288,20 @@ class GameRoom {
             yourPieces = blackPieces;
             opPieces = whitePieces;
         }
-
+        //call functions for correct piece.
         switch (piece)
         {
             case piece = "R":
                 tempMoves = RookMoves(currentCell,this.gamestate,yourPieces,opPieces);
                 break;
             case piece = "B":
+                tempMoves = BishopMoves(currentCell,this.gamestate,yourPieces,opPieces);
                 break;
             case piece = "N":
                 break;
             case piece = "Q":
+                tempMoves = RookMoves(currentCell,this.gamestate,yourPieces,opPieces);
+                tempMoves += BishopMoves(currentCell,this.gamestate,yourPieces,opPieces);
                 break;
             case piece = "K":
                 break;
@@ -313,47 +316,76 @@ class GameRoom {
 }
 
 //piece functions
-class RookMoves {
-    constructor(currentCell, gamestate, yourPieces, opPieces) {
-        this.currentCell = currentCell;
-        this.gamestate = gamestate;
-        this.yourPieces = yourPieces;
-        this.opPieces = opPieces;
-        this.moves = [];
+function RookMoves(currentCell,gamestate,yourPieces,opPieces){
+    this.gamestate = gamestate;
+    this.yourPieces = yourPieces;
+    this.opPieces = opPieces;
+    this.currentCell = currentCell;
+    this.moves = [];
 
-        if (rightedges.includes(this.currentCell)) {
-            GenerateMoves(8);
-            GenerateMoves(-8);
-            GenerateMoves(-1);
-        } else if (leftedges.includes(this.currentCell)) {
-            GenerateMoves(8);
-            GenerateMoves(-8);
-            GenerateMoves(1);
-        } else {
-            GenerateMoves(8);
-            GenerateMoves(-8);
-            GenerateMoves(1);
-            GenerateMoves(-1);
-        }
-        return this.moves;
+    //move options if piece is on edge of board
+    if (rightedges.includes(currentCell)) {
+        GenerateMoves(8);
+        GenerateMoves(-8);
+        GenerateMoves(-1);
+    } else if (leftedges.includes(currentCell)) {
+        GenerateMoves(8);
+        GenerateMoves(-8);
+        GenerateMoves(1);
+    } else {
+        GenerateMoves(8);
+        GenerateMoves(-8);
+        GenerateMoves(1);
+        GenerateMoves(-1);
     }
+    //console.log(this.moves);
+    return this.moves;
 }
 
+function BishopMoves(currentCell,gamestate,yourPieces,opPieces){
+    this.gamestate = gamestate;
+    this.yourPieces = yourPieces;
+    this.opPieces = opPieces;
+    this.currentCell = currentCell;
+    this.moves = [];
 
-function GenerateMoves(dir){
-    for (let i = 0; i++; i < 8){
-        console.log(this.currentCell);
-
-        if (nextCell < 64 && nextCell > -1){
-            let piece = this.gamestate[nextCell];
-            console.log(piece);
-            if (rightedges.includes(nextCell) || leftedges.includes(nextCell)) { i = 7; }
-
-            if (piece == "") { this.moves.push(nextCell) } //if empty allows
-            else if (this.opPieces.includes(piece)) { this.moves.push(nextCell); i = 8 } //if opponent allows take but no further
-            else if (this.yourPieces.includes(piece)) { i = 8; } 
-        }
+    //move options if piece is on edge of board
+    if (rightedges.includes(currentCell)) {
+        GenerateMoves(7);
+        GenerateMoves(-9);
+    } else if (leftedges.includes(currentCell)) {
+        GenerateMoves(9);
+        GenerateMoves(-7);
+    } else {
+        GenerateMoves(7);
+        GenerateMoves(-7);
+        GenerateMoves(9);
+        GenerateMoves(-9);
     }
     console.log(this.moves);
+    return this.moves;
+}
+//calculates the rook / bishop / queen moves in a given direction
+function GenerateMoves(dir){
+    //iterate 7 times in all the directions
+    for (let i = 1; i < 8; i++){
+        //calculate next square
+        var nextCell = this.currentCell + dir*i;
     
+        //check if square is in board valid range
+        if (nextCell < 64 && nextCell > -1){
+            //get string id of next cell
+            let piece = this.gamestate[nextCell];
+    
+            //stop moves when they hit edge of board
+            if (!(rightedges.includes(this.currentCell) || leftedges.includes(this.currentCell))) {
+                //if the piece is not on the edge of the board then break once edge of board is met to prevent moves overlapping rows.
+                if (rightedges.includes(nextCell) || leftedges.includes(nextCell)) { i = 7; }; 
+            } 
+
+            if (piece == "") { this.moves.push(nextCell) } //if square empty allows move
+            else if (this.opPieces.includes(piece)) { this.moves.push(nextCell); i = 8 } //if opponents piece allows take but no further
+            else if (this.yourPieces.includes(piece)) { i = 8; }  //if yourcolour does not allow the move
+        }
+    }
 }
