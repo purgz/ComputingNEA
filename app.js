@@ -142,7 +142,7 @@ io.on("connection", (socket) => {
 app.get("/newGame",(req,res)=>{
     res.render("gamePage.ejs")
 })
-
+//main game requests
 //keeeping the same session variables over the new page which will be the live game page.
 const gameNamespace = io.of("/livegame");
 //adding connection detection for the live game page using different namespace
@@ -157,9 +157,8 @@ gameNamespace.on("connection",(socket)=>{
         Rooms[session.roomname] = new GameRoom();
     }
     //give users their random colours
-    session.yourColour = Rooms[session.roomname].addUsers(session.username);
-    //console.log(session.yourColour)
-    //console.log(Rooms)
+    session.yourColour = Rooms[session.roomname].AddUsers(session.username);
+    //console.log(Rooms);
 
     //initialisation emits
     gameNamespace.to(session.roomname).emit("Render",Rooms[session.roomname].gamestate); 
@@ -167,7 +166,9 @@ gameNamespace.on("connection",(socket)=>{
 
     //handling player moves
     socket.on("move-request",(currentCell,newSquare)=>{
-        console.log(currentCell,newSquare);
+        //console.log(currentCell,newSquare);
+        Rooms[session.roomname].UpdateBoard(currentCell,newSquare,session.yourColour);
+        gameNamespace.to(session.roomname).emit("Render",Rooms[session.roomname].gamestate);
     });
 });
 
@@ -187,10 +188,20 @@ function GenerateDefaultPosition() {
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
-        "wP", "", "wP", "wP", "wP", "wP", "wP", "wP",
+        "", "", "wP", "wP", "wP", "wP", "wP", "wP",
         "wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"
     ];
 }
+//consts
+const blackPieces = ["bP","bN","bR","bB","bQ","bK"];
+const whitePieces = ["wP","wN","wR","wB","wQ","wK"];
+
+const leftedges = [0, 8, 16, 24, 32, 40, 48, 56]
+const rightedges = [7, 15, 23, 31, 39, 47, 55, 63]
+
+const leftedges2 = [1, 9, 17, 25, 33, 41, 49, 57]
+const rightedges2 = [6, 14, 22, 30, 38, 46, 54, 62]
+
 
 class GameRoom {
     //instantiate room with main attributes.
@@ -203,7 +214,7 @@ class GameRoom {
     }
 
     //adds users to the game and gives them their session colour variables - spectators do not get colour
-    addUsers(uname){
+    AddUsers(uname){
         if (this.player1 && this.player2){
             return "spectator";
         }
@@ -223,7 +234,126 @@ class GameRoom {
             } else {
                 this.player2Colour = "white";
             }
+            this.turn = "white"; //initlialse the game turns.
             return this.player2Colour;
         }
     }
+
+    //deals with move requests from the current game room
+    UpdateBoard(currentCell,newSquare,playerColour){
+        //-1 1 from both as they are sent in as square id from 1 to 64 but array is from 0 to 63
+        currentCell -= 1;
+        newSquare -= 1;
+
+        if (playerColour !== this.turn){ console.log("not your turn");return; } //if not your turn then you cant move
+        
+        var opponentColour;  //not needed outside of method
+
+        //setting opponent colour to be opposite of current player
+        if (playerColour == this.player1Colour){
+            opponentColour = this.player2Colour;
+        } else {
+            opponentColour = this.player1Colour;
+        }
+
+        this.playerLegalMoves = this.LegalMoves(currentCell,playerColour);
+
+        //if the move is legal move piece and make old square = to ""
+        if (this.playerLegalMoves.includes(newSquare)){
+            this.gamestate[newSquare] = this.gamestate[currentCell];
+            this.gamestate[currentCell] = "";
+        } else {
+            console.log("illegal move");
+            return;
+        }
+
+        //alternate the turn when a move is finalised.
+        if (playerColour == this.player1Colour){
+            this.turn = this.player2Colour;
+        } else {
+            this.turn = this.player1Colour;
+        }
+    }
+
+    LegalMoves(currentCell,playerColour){
+        let tempMoves = [];   //array which will return all legal moves
+        let piece = this.gamestate[currentCell][1];  //selected piece - second letter to tell what piece
+        let yourPieces;  //array of the pieces which are yours and opponents
+        let opPieces; //opponent pieces
+
+        if (playerColour == "white"){
+            yourPieces = whitePieces;
+            opPieces = blackPieces;
+        } else {
+            yourPieces = blackPieces;
+            opPieces = whitePieces;
+        }
+
+        switch (piece)
+        {
+            case piece = "R":
+                tempMoves = RookMoves(currentCell,this.gamestate,yourPieces,opPieces);
+                break;
+            case piece = "B":
+                break;
+            case piece = "N":
+                break;
+            case piece = "Q":
+                break;
+            case piece = "K":
+                break;
+            case piece = "P":
+                break;  
+            default:
+                break;
+        }
+
+        return tempMoves;
+    }
+}
+
+//piece functions
+class RookMoves {
+    constructor(currentCell, gamestate, yourPieces, opPieces) {
+        this.currentCell = currentCell;
+        this.gamestate = gamestate;
+        this.yourPieces = yourPieces;
+        this.opPieces = opPieces;
+        this.moves = [];
+
+        if (rightedges.includes(this.currentCell)) {
+            GenerateMoves(8);
+            GenerateMoves(-8);
+            GenerateMoves(-1);
+        } else if (leftedges.includes(this.currentCell)) {
+            GenerateMoves(8);
+            GenerateMoves(-8);
+            GenerateMoves(1);
+        } else {
+            GenerateMoves(8);
+            GenerateMoves(-8);
+            GenerateMoves(1);
+            GenerateMoves(-1);
+        }
+        return this.moves;
+    }
+}
+
+
+function GenerateMoves(dir){
+    for (let i = 0; i++; i < 8){
+        console.log(this.currentCell);
+
+        if (nextCell < 64 && nextCell > -1){
+            let piece = this.gamestate[nextCell];
+            console.log(piece);
+            if (rightedges.includes(nextCell) || leftedges.includes(nextCell)) { i = 7; }
+
+            if (piece == "") { this.moves.push(nextCell) } //if empty allows
+            else if (this.opPieces.includes(piece)) { this.moves.push(nextCell); i = 8 } //if opponent allows take but no further
+            else if (this.yourPieces.includes(piece)) { i = 8; } 
+        }
+    }
+    console.log(this.moves);
+    
 }

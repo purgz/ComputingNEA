@@ -116,6 +116,6 @@ socket.on("Render",(gamestate)=>{
     RenderBoard(gamestate);
 })
 
-socket.on("orientation",(colour)=>{
+socket.on("Orientation",(colour)=>{
     Orientation(colour);
 })
