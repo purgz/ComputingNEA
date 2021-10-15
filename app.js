@@ -16,7 +16,7 @@ const io = new Server(server);
 const db = mysql.createConnection({
     host:"localhost",
     user:"root",
-    password:"Hen12345",
+    password:"",
     database:"logininfo"
 });
 
@@ -183,12 +183,12 @@ server.listen(3000,()=>{
 //each index represents a piece, each piece is notated as first letter - colour - second letter - piece
 function GenerateDefaultPosition() {
     return ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR",
-        "", "bP", "bP", "", "bP", "bP", "bP", "bP",
+        "", "bP", "bP", "", "", "bP", "bP", "bP",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
-        "", "", "wP", "wP", "wP", "wP", "wP", "wP",
+        "wP", "wP", "wP", "", "wP", "wP", "wP", "wP",
         "wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"
     ];
 }
@@ -210,7 +210,7 @@ class GameRoom {
         this.player1;
         this.player2;
         this.playerLegalMoves = [];
-        this.turn = ""; //until 2 users no colour so no one can move
+        this.turn = ""; //until 2 users no colour so no one can moves
     }
 
     //adds users to the game and gives them their session colour variables - spectators do not get colour
@@ -246,20 +246,11 @@ class GameRoom {
         newSquare -= 1;
 
         if (playerColour !== this.turn){ console.log("not your turn");return; } //if not your turn then you cant move
-        
-        var opponentColour;  //not needed outside of method
 
-        //setting opponent colour to be opposite of current player
-        if (playerColour == this.player1Colour){
-            opponentColour = this.player2Colour;
-        } else {
-            opponentColour = this.player1Colour;
-        }
-
-        this.playerLegalMoves = this.LegalMoves(currentCell,playerColour);
+        this.playerLegalMoves = this.LegalMoves(currentCell,playerColour,this.gamestate);
 
         //if the move is legal move piece and make old square = to ""
-        if (this.playerLegalMoves.includes(newSquare)){
+        if (this.playerLegalMoves.includes(newSquare) && !(CheckAfterMove(this.gamestate,playerColour,currentCell,newSquare,this.player1))){
             this.gamestate[newSquare] = this.gamestate[currentCell];
             this.gamestate[currentCell] = "";
         } else {
@@ -275,9 +266,9 @@ class GameRoom {
         }
     }
 
-    LegalMoves(currentCell,playerColour){
+    LegalMoves(currentCell,playerColour,gamestate){
         let tempMoves = [];   //array which will return all legal moves
-        let piece = this.gamestate[currentCell][1];  //selected piece - second letter to tell what piece
+        let piece = gamestate[currentCell][1];  //selected piece - second letter to tell what piece
         let yourPieces;  //array of the pieces which are yours and opponents
         let opPieces; //opponent pieces
 
@@ -292,16 +283,17 @@ class GameRoom {
         switch (piece)
         {
             case piece = "R":
-                tempMoves = RookMoves(currentCell,this.gamestate,yourPieces,opPieces);
+                tempMoves = RookMoves(currentCell,gamestate,yourPieces,opPieces);
                 break;
             case piece = "B":
-                tempMoves = BishopMoves(currentCell,this.gamestate,yourPieces,opPieces);
+                tempMoves = BishopMoves(currentCell,gamestate,yourPieces,opPieces);
                 break;
             case piece = "N":
+                tempMoves = KnightMoves(currentCell,gamestate,opPieces);
                 break;
             case piece = "Q":
-                tempMoves = RookMoves(currentCell,this.gamestate,yourPieces,opPieces);
-                tempMoves += BishopMoves(currentCell,this.gamestate,yourPieces,opPieces);
+                tempMoves = RookMoves(currentCell,gamestate,yourPieces,opPieces);
+                tempMoves = tempMoves.concat(BishopMoves(currentCell,gamestate,yourPieces,opPieces));
                 break;
             case piece = "K":
                 break;
@@ -312,6 +304,19 @@ class GameRoom {
         }
 
         return tempMoves;
+    }
+
+    //added opponenet legal moves
+    OpponentLegalMoves(gamestate,opponentColour){
+        console.log("calculating")
+        this.opponentLegalMoves = [];
+        //calc opponent legal moves
+        for (let i = 0; i < 64; i++) {
+            if (gamestate[i][0] == opponentColour[0]) {
+                this.opponentLegalMoves = this.opponentLegalMoves.concat(this.LegalMoves(i, opponentColour, gamestate));
+            }
+        }
+        return this.opponentLegalMoves;
     }
 }
 
@@ -362,7 +367,7 @@ function BishopMoves(currentCell,gamestate,yourPieces,opPieces){
         GenerateMoves(9);
         GenerateMoves(-9);
     }
-    console.log(this.moves);
+    //console.log(this.moves);
     return this.moves;
 }
 //calculates the rook / bishop / queen moves in a given direction
@@ -388,4 +393,68 @@ function GenerateMoves(dir){
             else if (this.yourPieces.includes(piece)) { i = 8; }  //if yourcolour does not allow the move
         }
     }
+}
+
+//function for knight legal moves
+function KnightMoves(currentCell,gamestate,opPieces){
+
+    var knightMoves = [];  //legal squares to go to
+    var possibleMoves = []; //legal square differences from current squares
+
+    // knigt legal moves will changed slightly if on outer two ranks; 
+    if (leftedges.includes(currentCell)){
+        possibleMoves = [-15,-6,10,17];
+    } else if (leftedges2.includes(currentCell)){
+        possibleMoves = [-6,-15,10,17,-17,15]
+    } else if (rightedges.includes(currentCell)){
+        possibleMoves = [-10,-17,6,15]
+    } else if (rightedges2.includes(currentCell)){
+        possibleMoves = [6,15,-10,-17,17,-15]
+    } else {
+        possibleMoves = [6,10,-6,-10,15,17,-15,-17]
+    }
+    //loops each knigtmove and if in board range adds to legal
+    for (let i = 0; i<possibleMoves.length ; i++){
+        var nextCell = currentCell + possibleMoves[i];
+        
+        if (nextCell < 64 && nextCell > -1){
+            let temp = gamestate[nextCell];
+
+            if (temp == "") { knightMoves.push(nextCell) }
+            else if (opPieces.includes(temp)) { knightMoves.push(nextCell) }    
+        }
+    }
+    return knightMoves;
+}
+
+//added check system...
+//stops moves when you are in check when given the opponent legal moves
+function CheckAfterMove(gamestate,playerColour,currentCell,newSquare,roomname){
+    tempGamestate = Array.from(gamestate);
+    tempGamestate[newSquare] = tempGamestate[currentCell];
+    tempGamestate[currentCell] = "";
+    
+    if  (KingInCheck(tempGamestate,playerColour,roomname)){
+        console.log("your in check");
+        return true;
+    }
+    return false;
+}
+
+function KingInCheck(gamestate,playerColour,roomname){
+    var king = "";
+    var opColour;
+    if (playerColour == "black"){
+        king = "bK";
+        opColour = "white";
+    } else {
+        king = "wK";
+        opColour = "black";
+    }
+
+    var kingpos = gamestate.indexOf(king);
+    let opponentLegalMoves = Rooms[roomname].OpponentLegalMoves(tempGamestate,opColour);
+    console.log(opponentLegalMoves)
+    if (opponentLegalMoves.includes(kingpos)){return true;}
+    return false;
 }
