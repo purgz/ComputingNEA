@@ -248,6 +248,7 @@ class GameRoom {
         if (playerColour !== this.turn){ console.log("not your turn");return; } //if not your turn then you cant move
 
         this.playerLegalMoves = this.LegalMoves(currentCell,playerColour,this.gamestate);
+        console.log(this.playerLegalMoves)
 
         //if the move is legal move piece and make old square = to ""
         if (this.playerLegalMoves.includes(newSquare) && !(CheckAfterMove(this.gamestate,playerColour,currentCell,newSquare,this.player1))){
@@ -302,13 +303,13 @@ class GameRoom {
             default:
                 break;
         }
-
+        
         return tempMoves;
     }
 
     //added opponenet legal moves
     OpponentLegalMoves(gamestate,opponentColour){
-        console.log("calculating")
+        
         this.opponentLegalMoves = [];
         //calc opponent legal moves
         for (let i = 0; i < 64; i++) {
@@ -401,7 +402,7 @@ function KnightMoves(currentCell,gamestate,opPieces){
     var knightMoves = [];  //legal squares to go to
     var possibleMoves = []; //legal square differences from current squares
 
-    // knigt legal moves will changed slightly if on outer two ranks; 
+    // knight legal moves will changed slightly if on outer two ranks; 
     if (leftedges.includes(currentCell)){
         possibleMoves = [-15,-6,10,17];
     } else if (leftedges2.includes(currentCell)){
@@ -424,7 +425,13 @@ function KnightMoves(currentCell,gamestate,opPieces){
             else if (opPieces.includes(temp)) { knightMoves.push(nextCell) }    
         }
     }
+    console.log(knightMoves)
     return knightMoves;
+}
+
+function KingMoves(currentCell, gamestate, opPieces){
+    var kingMoves = [];
+    var possibleMoves = [];
 }
 
 //added check system...
@@ -454,7 +461,7 @@ function KingInCheck(gamestate,playerColour,roomname){
 
     var kingpos = gamestate.indexOf(king);
     let opponentLegalMoves = Rooms[roomname].OpponentLegalMoves(tempGamestate,opColour);
-    console.log(opponentLegalMoves)
+   // console.log(opponentLegalMoves)
     if (opponentLegalMoves.includes(kingpos)){return true;}
     return false;
 }
