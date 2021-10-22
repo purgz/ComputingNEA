@@ -1,5 +1,7 @@
+
 Server: sql4.freemysqlhosting.net
-Name: sql4440466
-Username: sql4440466
-Password: dKkJnMdu1p
+Name: sql4446100
+Username: sql4446100
+Password: 4rWsGxg81e
 Port number: 3306
+VQK5573vyVe6(rH^

@@ -14,10 +14,10 @@ const io = new Server(server);
 
 //caching connection to database -- free mysql hosting
 const db = mysql.createConnection({
-    host:"fdb32.awardspace.net",
-    user:"3969211_chessapp",
-    password:"WbdUpdqu9!Ba}E%q",
-    database:"3969211_chessapp"
+    host:"sql4.freemysqlhosting.net",
+    user:"sql4446100",
+    password:"4rWsGxg81e",
+    database:"sql4446100"
 });
 
 //connect to db and throw any errors
