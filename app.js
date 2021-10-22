@@ -494,9 +494,17 @@ function PawnTakeMoves(currentCell,gamestate,opPieces,dir){
     var possibleMoves = [];
     var takeMoves = [];
     if (rightedges.includes(currentCell)){
-        possibleMoves.push(dir*9);
+        if (dir > 0){
+            possibleMoves.push(dir*7);
+        } else {
+            possibleMoves.push(dir*9)
+        }
     } else if (leftedges.includes(currentCell)){
-        possibleMoves.push(dir*7);
+        if (dir > 0){
+            possibleMoves.push(dir*9);
+        } else {
+            possibleMoves.push(dir*7)
+        }
     } else{
         possibleMoves.push(dir*7);
         possibleMoves.push(dir*9);
