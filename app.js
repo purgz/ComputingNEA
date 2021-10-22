@@ -14,10 +14,10 @@ const io = new Server(server);
 
 //caching connection to database -- free mysql hosting
 const db = mysql.createConnection({
-    host:"localhost",
-    user:"root",
-    password:"",
-    database:"logininfo"
+    host:"fdb32.awardspace.net",
+    user:"3969211_chessapp",
+    password:"WbdUpdqu9!Ba}E%q",
+    database:"3969211_chessapp"
 });
 
 //connect to db and throw any errors
@@ -174,7 +174,7 @@ gameNamespace.on("connection",(socket)=>{
 
 
 //start server on port 3000
-server.listen(3000,()=>{
+server.listen(process.env.PORT || 3000,()=>{
     console.log("server is running on port 3000");
 })
 
