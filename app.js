@@ -183,12 +183,12 @@ server.listen(3000,()=>{
 //each index represents a piece, each piece is notated as first letter - colour - second letter - piece
 function GenerateDefaultPosition() {
     return ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR",
-        "", "bP", "bP", "", "", "bP", "bP", "bP",
+        "bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
-        "wP", "wP", "wP", "", "wP", "wP", "wP", "wP",
+        "wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP",
         "wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"
     ];
 }
@@ -297,8 +297,10 @@ class GameRoom {
                 tempMoves = tempMoves.concat(BishopMoves(currentCell,gamestate,yourPieces,opPieces));
                 break;
             case piece = "K":
+                tempMoves = KingMoves(currentCell,gamestate,opPieces);
                 break;
             case piece = "P":
+                tempMoves = PawnMoves(currentCell,gamestate,opPieces,playerColour)
                 break;  
             default:
                 break;
@@ -425,14 +427,93 @@ function KnightMoves(currentCell,gamestate,opPieces){
             else if (opPieces.includes(temp)) { knightMoves.push(nextCell) }    
         }
     }
-    console.log(knightMoves)
     return knightMoves;
 }
-
+//function for king legal moves
 function KingMoves(currentCell, gamestate, opPieces){
+    //array for the possible move differences and king legal moves
     var kingMoves = [];
     var possibleMoves = [];
+
+    //calculate the possible moves if the king is on either side of the boad
+    if (leftedges.includes(currentCell)){
+        possibleMoves = [1,8,9,-8,-7]
+    } else if (rightedges.includes(currentCell)){
+        possibleMoves = [-1,-8,-9,8,7]
+    } else {
+        possibleMoves = [1,8,9,7,-1,-8,-9,-7]
+    }
+    //iterate through possible moves and add them all to the king moves array
+    for (let i = 0; i<possibleMoves.length ; i++){
+        var nextCell = currentCell + possibleMoves[i];
+        
+        if (nextCell < 64 && nextCell > -1){
+            let temp = gamestate[nextCell];
+
+            //if square is empty or enemy piece, then add to legal moves
+            if (temp == "") { kingMoves.push(nextCell) }
+            else if (opPieces.includes(temp)) { kingMoves.push(nextCell) }    
+        }
+    }
+    return kingMoves;
 }
+
+function PawnMoves(currentCell,gamestate,opPieces,yourColour){ 
+    //find direction which your pawn can move.
+    var dir;
+    if (yourColour == "white"){
+        dir = -1;
+    } else {
+        dir = 1;
+    }
+    //initialise possible moves with the standard 1 square pawn move.
+    var possibleMoves = [dir*8];
+    var pawnMoves = [];
+
+    //adds the double square move if pawn is on second rank
+    if ((currentCell > 47 && currentCell < 56 && yourColour == "white") || (currentCell > 7 && currentCell < 16 && yourColour == "black")){
+        possibleMoves.push(dir*16);
+    }
+    
+    //iterate through possible moves and add them all to the king moves array
+    for (let i = 0; i<possibleMoves.length ; i++){
+        var nextCell = currentCell + possibleMoves[i];
+        
+        if (nextCell < 64 && nextCell > -1){
+            let temp = gamestate[nextCell];
+
+            //if square is empty or enemy piece, then add to legal moves
+            if (temp == "") { pawnMoves.push(nextCell) }  
+        }
+    }
+    pawnMoves = pawnMoves.concat((PawnTakeMoves(currentCell,gamestate,opPieces,dir)));
+    return pawnMoves;
+}
+//returns the diagonal take squares for selected pawn
+function PawnTakeMoves(currentCell,gamestate,opPieces,dir){
+    var possibleMoves = [];
+    var takeMoves = [];
+    if (rightedges.includes(currentCell)){
+        possibleMoves.push(dir*9);
+    } else if (leftedges.includes(currentCell)){
+        possibleMoves.push(dir*7);
+    } else{
+        possibleMoves.push(dir*7);
+        possibleMoves.push(dir*9);
+    }
+    for (let i = 0; i<possibleMoves.length ; i++){
+        var nextCell = currentCell + possibleMoves[i];
+        
+        if (nextCell < 64 && nextCell > -1){
+            let temp = gamestate[nextCell];
+
+            //if square is empty or enemy piece, then add to legal moves
+            if (opPieces.includes(temp)) { takeMoves.push(nextCell) }  
+        }
+    }
+    return takeMoves;
+}
+
 
 //added check system...
 //stops moves when you are in check when given the opponent legal moves
