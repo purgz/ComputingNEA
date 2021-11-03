@@ -289,11 +289,7 @@ class GameRoom {
             console.log("illegal move");
             return;
         }
-        if (playerColour == this.player1Colour){
-            this.player1Castle = false;
-        } else {
-            this.player2Castle = false;
-        }
+       
         //alternate the turn when a move is finalised.
         if (playerColour == this.player1Colour){
             this.turn = this.player2Colour;
@@ -381,12 +377,10 @@ class GameRoom {
             if (this.gamestate[currentCell+1] !== "" || this.gamestate[currentCell+2] !== ""){ return false; }
             newRookSquare = newSquare - 1;
             oldRookSquare = currentCell + 3;
-            
         } else if (newSquare == currentCell -2 ){
             if (this.gamestate[currentCell-1] !== "" || this.gamestate[currentCell-2] !== ""){ return false; }
             newRookSquare = newSquare + 1;
             oldRookSquare = currentCell - 4;
-            
         } else {
             return false;
         }
@@ -664,5 +658,6 @@ function IsGameOver(gamestate,playerColour,roomname){
     } else {
         console.log("stalemate");
     }
-   
 }
+
+//all game rules added now just need to add end sequences and closing the game room
