@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const http = require("http");
 const { Server } = require("socket.io");
+const e = require("cors");
 
 //creating server
 const app = express();
@@ -16,7 +17,7 @@ const io = new Server(server);
 const db = mysql.createConnection({
     host:"localhost",
     user:"root",
-    password:"",
+    password:"Hen12345",
     database:"logininfo"
 });
 
@@ -248,13 +249,14 @@ class GameRoom {
         currentCell -= 1;
         newSquare -= 1;
         var opponentColour;
+        
      
         if (playerColour == this.player1Colour){
             opponentColour = this.player2Colour;
         } else {
             opponentColour = this.player1Colour;
         }
-
+        
         if (playerColour !== this.turn){ console.log("not your turn");return; } //if not your turn then you cant move
 
         this.playerLegalMoves = this.LegalMoves(currentCell,playerColour,this.gamestate);
@@ -267,7 +269,7 @@ class GameRoom {
             }
             this.gamestate[newSquare] = this.gamestate[currentCell];
             this.gamestate[currentCell] = "";
-
+            //deals with castling - checks if check after move then if the moves inbetween are in check, then changes players castling status on and off
         } else if(this.gamestate[currentCell][1] == "K" && !(this.playerLegalMoves.includes(newSquare)) 
             && !(CheckAfterMove(this.gamestate,playerColour,currentCell,newSquare,this.player1))){
 
@@ -282,22 +284,30 @@ class GameRoom {
                 || this.OpponentLegalMoves(this.gamestate,opponentColour).includes(currentCell+2)){ return; }
             
             if (!(this.Castle(currentCell,newSquare))){ return; }
-            if (playerColour == this.player1Colour){
-                this.player1Castle = false;
-            } else {
-                this.player2Castle = false;
-            }
+
         } else {
             console.log("illegal move");
             return;
         }
-
+        if (playerColour == this.player1Colour){
+            this.player1Castle = false;
+        } else {
+            this.player2Castle = false;
+        }
         //alternate the turn when a move is finalised.
         if (playerColour == this.player1Colour){
             this.turn = this.player2Colour;
+            if (this.gamestate[currentCell][1] == "K" || this.gamestate[currentCell][1] == "R"){
+                this.player1Castle = false;
+            }
         } else {
             this.turn = this.player1Colour;
+            if (this.gamestate[currentCell][1] == "K" || this.gamestate[currentCell][1] == "R"){
+                this.player2Castle = false;
+            }
         }
+
+        IsGameOver(this.gamestate,opponentColour,this.player1)
     }
 
     LegalMoves(currentCell,playerColour,gamestate){
@@ -617,8 +627,42 @@ function KingInCheck(gamestate,playerColour,roomname){
     }
 
     var kingpos = gamestate.indexOf(king);
-    let opponentLegalMoves = Rooms[roomname].OpponentLegalMoves(tempGamestate,opColour);
-   // console.log(opponentLegalMoves)
-    if (opponentLegalMoves.includes(kingpos)){return true;}
+    let opponentLegalMoves = Rooms[roomname].OpponentLegalMoves(gamestate,opColour);
+  
+    if (opponentLegalMoves.includes(kingpos)){ return true;}
     return false;
+}
+
+//pogchamp checkmate moment
+function IsGameOver(gamestate,playerColour,roomname){
+    tempGamestate = Array.from(gamestate);
+    var checkMate = false; //checkmate or stalemate
+
+    if (KingInCheck(tempGamestate,playerColour,roomname)){
+        checkMate = true;
+       // console.log("checking for game over KING CHECK")
+    }
+
+    for (let i = 0; i < 64; i++) {
+        if (tempGamestate[i][0] == playerColour[0]) {
+            var newSquares = Rooms[roomname].LegalMoves(i, playerColour, tempGamestate);
+            //console.log(i,newSquares)
+            for (let j = 0; j < newSquares.length; j++){
+                tempGamestate[newSquares[j]] = tempGamestate[i];
+                tempGamestate[i] = 0;
+                if (!(KingInCheck(tempGamestate,playerColour,roomname))){
+                   // console.log("not mate");
+                    return;
+                }
+                tempGamestate = Array.from(gamestate);
+            }
+        }
+    }
+
+    if (checkMate){
+        console.log("Checkmate");
+    } else {
+        console.log("stalemate");
+    }
+   
 }
