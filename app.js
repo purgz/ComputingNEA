@@ -14,10 +14,10 @@ const io = new Server(server);
 
 //caching connection to database -- free mysql hosting
 const db = mysql.createConnection({
-    host:"sql4.freemysqlhosting.net",
-    user:"sql4446100",
-    password:"4rWsGxg81e",
-    database:"sql4446100"
+    host:"localhost",
+    user:"root",
+    password:"",
+    database:"logininfo"
 });
 
 //connect to db and throw any errors
@@ -211,6 +211,9 @@ class GameRoom {
         this.player2;
         this.playerLegalMoves = [];
         this.turn = ""; //until 2 users no colour so no one can moves
+        
+        this.player1Castle = true;
+        this.player2Castle = true;
     }
 
     //adds users to the game and gives them their session colour variables - spectators do not get colour
@@ -244,16 +247,46 @@ class GameRoom {
         //-1 1 from both as they are sent in as square id from 1 to 64 but array is from 0 to 63
         currentCell -= 1;
         newSquare -= 1;
+        var opponentColour;
+     
+        if (playerColour == this.player1Colour){
+            opponentColour = this.player2Colour;
+        } else {
+            opponentColour = this.player1Colour;
+        }
 
         if (playerColour !== this.turn){ console.log("not your turn");return; } //if not your turn then you cant move
 
         this.playerLegalMoves = this.LegalMoves(currentCell,playerColour,this.gamestate);
-        console.log(this.playerLegalMoves)
-
+        //console.log(this.playerLegalMoves)
+        
         //if the move is legal move piece and make old square = to ""
         if (this.playerLegalMoves.includes(newSquare) && !(CheckAfterMove(this.gamestate,playerColour,currentCell,newSquare,this.player1))){
+            if (this.gamestate[currentCell][1] == "P"){
+                this.Promotion(currentCell,newSquare);
+            }
             this.gamestate[newSquare] = this.gamestate[currentCell];
             this.gamestate[currentCell] = "";
+
+        } else if(this.gamestate[currentCell][1] == "K" && !(this.playerLegalMoves.includes(newSquare)) 
+            && !(CheckAfterMove(this.gamestate,playerColour,currentCell,newSquare,this.player1))){
+
+            if (playerColour == this.player1Colour){
+                if(!(this.player1Castle)){ return; }
+            } else {
+                if(!(this.player2Castle)){ return; }       
+            }
+
+            // works - checks king square and the intbetween squares for castling and if they are under attack then not allowed to castle.
+            if (this.OpponentLegalMoves(this.gamestate,opponentColour).includes(currentCell) || this.OpponentLegalMoves(this.gamestate,opponentColour).includes(currentCell+1)
+                || this.OpponentLegalMoves(this.gamestate,opponentColour).includes(currentCell+2)){ return; }
+            
+            if (!(this.Castle(currentCell,newSquare))){ return; }
+            if (playerColour == this.player1Colour){
+                this.player1Castle = false;
+            } else {
+                this.player2Castle = false;
+            }
         } else {
             console.log("illegal move");
             return;
@@ -321,7 +354,40 @@ class GameRoom {
         }
         return this.opponentLegalMoves;
     }
+  
+    Promotion(currentCell,newSquare){
+        if (newSquare < 8){
+            this.gamestate[currentCell] = "wQ";
+        } else if (newSquare > 55){
+            this.gamestate[currentCell] = "bQ";
+        }
+    }
+
+    Castle(currentCell,newSquare){
+        let newRookSquare;
+        let oldRookSquare;
+        
+        if (newSquare == currentCell + 2){
+            if (this.gamestate[currentCell+1] !== "" || this.gamestate[currentCell+2] !== ""){ return false; }
+            newRookSquare = newSquare - 1;
+            oldRookSquare = currentCell + 3;
+            
+        } else if (newSquare == currentCell -2 ){
+            if (this.gamestate[currentCell-1] !== "" || this.gamestate[currentCell-2] !== ""){ return false; }
+            newRookSquare = newSquare + 1;
+            oldRookSquare = currentCell - 4;
+            
+        } else {
+            return false;
+        }
+        this.gamestate[newSquare] = this.gamestate[currentCell]
+        this.gamestate[currentCell] = "";
+        this.gamestate[newRookSquare] = this.gamestate[oldRookSquare] 
+        this.gamestate[oldRookSquare] = "";
+        return true;
+    }
 }
+
 
 //piece functions
 function RookMoves(currentCell,gamestate,yourPieces,opPieces){
@@ -493,6 +559,7 @@ function PawnMoves(currentCell,gamestate,opPieces,yourColour){
 function PawnTakeMoves(currentCell,gamestate,opPieces,dir){
     var possibleMoves = [];
     var takeMoves = [];
+    //remove the takes going off edges of the board
     if (rightedges.includes(currentCell)){
         if (dir > 0){
             possibleMoves.push(dir*7);
@@ -509,6 +576,7 @@ function PawnTakeMoves(currentCell,gamestate,opPieces,dir){
         possibleMoves.push(dir*7);
         possibleMoves.push(dir*9);
     }
+    //go through possible diagonal takes, if the pieces are opponents then the take is added to legal moves
     for (let i = 0; i<possibleMoves.length ; i++){
         var nextCell = currentCell + possibleMoves[i];
         
