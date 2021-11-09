@@ -119,3 +119,10 @@ socket.on("Render",(gamestate)=>{
 socket.on("Orientation",(colour)=>{
     Orientation(colour);
 })
+
+socket.on("player-disconnect",()=>{
+    alert("user disconnected");
+    document.removeEventListener("dragstart",dragStart)
+    document.removeEventListener("dragover",dragOver);
+    document.removeEventListener ("dragend",dragEnd);
+})
