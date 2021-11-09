@@ -129,11 +129,13 @@ io.on("connection", (socket) => {
     const session = socket.request.session;
     session.roomname = "";
     console.log(session.username)
+    
     io.emit("NewGame",gameRooms);
     socket.on("CreateGame",()=>{
         console.log("Creating game")
         session.roomname = session.username.slice(); //creates copy instead of reference
         gameRooms.push(session.username.slice());
+        console.log(gameRooms)
         io.emit("NewGame",gameRooms);
         session.save();
     })
@@ -180,12 +182,17 @@ gameNamespace.on("connection",(socket)=>{
 
     socket.on("disconnect", () => {
         
-        if (session.yourColour == "spectator") { return; } //stops spectator ending game
+        if (session.yourColour == "spectator") { session.save(); return; } //stops spectator ending game
         console.log(session.username+" leaving "+session.roomname);
         
         gameNamespace.to(session.roomname).emit("player-disconnect");
         delete Rooms[session.roomname];
-        gameRooms.splice(gameRooms.indexOf(session.roomname),1);
+        
+        if (gameRooms.includes(session.roomname)){ //prevents removing other games from list when last player dc
+            gameRooms.splice(gameRooms.indexOf(session.roomname),1);
+        }
+        
+        console.log(gameRooms)
         session.save();
     })
     
