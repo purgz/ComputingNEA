@@ -17,7 +17,7 @@ const io = new Server(server);
 const db = mysql.createConnection({
     host:"localhost",
     user:"root",
-    password:"",
+    password:"Hen12345",
     database:"logininfo"
 });
 
@@ -35,11 +35,16 @@ app.use(bodyParser.urlencoded({extended:true}));
 //express session middleware
 var sessionMiddleware = session({
     secret:"secret",
-  
 })
 app.use(sessionMiddleware);
 
 app.use(express.static("public"));
+
+//remove cache so pages have to be reloaded when using the back button
+app.use(function(req, res, next) {
+    res.set('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    next();
+});
 
 //get pages
 //displaying the first page when a user goes to application link
@@ -120,19 +125,21 @@ const wrap = middleware => (socket, next) => middleware(socket.request, {}, next
 io.use(wrap(sessionMiddleware));
 
 io.on("connection", (socket) => {
-    const session = socket.request.session;
     
-    io.to(socket.id).emit("NewGame",gameRooms);
+    const session = socket.request.session;
+    session.roomname = "";
+    console.log(session.username)
+    io.emit("NewGame",gameRooms);
     socket.on("CreateGame",()=>{
         console.log("Creating game")
-        session.roomname = session.username;
-        gameRooms.push(session.username);
+        session.roomname = session.username.slice(); //creates copy instead of reference
+        gameRooms.push(session.username.slice());
         io.emit("NewGame",gameRooms);
         session.save();
     })
 
     socket.on("JoinRoom",(roomName)=>{
-        console.log(roomName)
+        console.log("joining "+roomName)
         session.roomname = roomName
         session.save();  //means can use the session vars on multiple socket.io connections.
     });
@@ -168,16 +175,20 @@ gameNamespace.on("connection",(socket)=>{
         //console.log(currentCell,newSquare);
         Rooms[session.roomname].UpdateBoard(currentCell,newSquare,session.yourColour);
         gameNamespace.to(session.roomname).emit("Render",Rooms[session.roomname].gamestate);
+        session.save();
     });
 
     socket.on("disconnect", () => {
-
+        
         if (session.yourColour == "spectator") { return; } //stops spectator ending game
-
+        console.log(session.username+" leaving "+session.roomname);
+        
         gameNamespace.to(session.roomname).emit("player-disconnect");
-        gameRooms = [];
-        delete Rooms[session.roomname]
+        delete Rooms[session.roomname];
+        gameRooms.splice(gameRooms.indexOf(session.roomname),1);
+        session.save();
     })
+    
 });
 
 

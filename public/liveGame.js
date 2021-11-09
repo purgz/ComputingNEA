@@ -126,3 +126,4 @@ socket.on("player-disconnect",()=>{
     document.removeEventListener("dragover",dragOver);
     document.removeEventListener ("dragend",dragEnd);
 })
+
