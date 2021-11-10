@@ -17,7 +17,7 @@ const io = new Server(server);
 const db = mysql.createConnection({
     host:"localhost",
     user:"root",
-    password:"Hen12345",
+    password:"",
     database:"logininfo"
 });
 
@@ -175,7 +175,10 @@ gameNamespace.on("connection",(socket)=>{
     //handling player moves
     socket.on("move-request",(currentCell,newSquare)=>{
         //console.log(currentCell,newSquare);
-        Rooms[session.roomname].UpdateBoard(currentCell,newSquare,session.yourColour);
+        if (Rooms[session.roomname].UpdateBoard(currentCell,newSquare,session.yourColour)){
+            console.log("send to client game over")
+            gameNamespace.to(session.roomname).emit("game-over",session.username)
+        }
         gameNamespace.to(session.roomname).emit("Render",Rooms[session.roomname].gamestate);
         session.save();
     });
@@ -208,14 +211,14 @@ server.listen(process.env.PORT || 3000,()=>{
 //generates the defualt board layout
 //each index represents a piece, each piece is notated as first letter - colour - second letter - piece
 function GenerateDefaultPosition() {
-    return ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR",
-        "bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP",
+    return ["bR", "", "", "bQ", "bK", "", "bN", "bR",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
-        "wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP",
-        "wR", "wN", "wB", "wQ", "wK", "wB","wN", "wR"
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "wR", "wN", "wB", "wQ", "wK", "","", "wR"
     ];
 }
 //consts
@@ -360,7 +363,9 @@ class GameRoom {
 
         console.log("short castle "+this.player1ShortCastle,this.player2ShortCastle+" long castle "+this.player1LongCastle,this.player2LongCastle);
         //checks whether the game is over by checkmate or stalemate on each move.
-        IsGameOver(this.gamestate,opponentColour,this.player1)
+        if(IsGameOver(this.gamestate,opponentColour,this.player1)){
+            return true;
+        }
     }
 
     LegalMoves(currentCell,playerColour,gamestate){
@@ -732,6 +737,7 @@ function IsGameOver(gamestate,playerColour,roomname){
     } else {
         console.log("stalemate");
     }
+    return true;
 }
 
 //function for removing castling rights

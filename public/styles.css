@@ -22,11 +22,25 @@ img
 }
 .board
 {
-    position:absolute;
     top:25%;
     left:36%;
 }
-   
+
+#chatcontainer{
+    width:30%;
+    
+}
+#chatwrapper{
+    width:100%;
+    background-color: #f2f2f2;
+    
+}
+#chatlist{
+    overflow-y: scroll;
+    overflow-wrap:break-word;
+    height: 200px;
+}
+
 /*disables people highlighting the squares */
 .disable-select 
 {

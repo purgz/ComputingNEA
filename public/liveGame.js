@@ -127,3 +127,9 @@ socket.on("player-disconnect",()=>{
     document.removeEventListener ("dragend",dragEnd);
 })
 
+socket.on("game-over",(username)=>{
+    
+    document.removeEventListener("dragstart",dragStart)
+    document.removeEventListener("dragover",dragOver);
+    document.removeEventListener ("dragend",dragEnd);
+})
