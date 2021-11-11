@@ -8,6 +8,16 @@
     <link rel = "stylesheet" href = "styles.css">
 </head>
 <body>
+  
+    <div id="mySidenav" class="sidenav">
+        <a href="menuPage">Menu</a>
+        <a href="#">Services</a>
+        <a href="#">Clients</a>
+        <a href="#">Contact</a>
+      </div>
+    
+    <div id = "main">
+    <div id = "player2" class = "player-name">Player</div>
     <div class = "board disable-select">
         <div>
             <div id = "1" class = "light square"></div>
@@ -92,7 +102,7 @@
         
     </div>
 
-    <div id = "chatcontainer">
+    <div class = "container">
 
         <h1 id = "header">Chat</h1>
 
@@ -108,7 +118,8 @@
         </div>
 
     </div>
-
+    <div id = "player1" class = "player-name">Player</div>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src = "liveGame.js"></script>

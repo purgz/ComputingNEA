@@ -1,3 +1,8 @@
+
+body{
+    background-color: #c8d8e4;
+}
+
 /*styling for chess elements to create a board and pieces in the correct locations */
 img 
 {        
@@ -6,29 +11,34 @@ img
 }
 .square
 {
-    width:50px;
-    height:50px;
-    border:1px solid black;
+    position:relative;
+    width: 12.5%;
+    height: 0;
+    padding-bottom: 12.5%;
+
     display:inline-block;
-    margin:-2px;
+    margin: -2px;
     margin-bottom: 2px;
-    
+   
     text-align: center;
     vertical-align: top;
+    background-color: #eeeed2;
 }
 .dark
 {
-    background-color:lightgrey;
+    background-color:#769656;
 }
 .board
 {
-    top:25%;
-    left:36%;
+    width: 40%;
+    height: 40%;
+    display: inline-block;
 }
 
-#chatcontainer{
-    width:30%;
-    
+
+.container{
+    width: 40%;
+    display: inline-block;
 }
 #chatwrapper{
     width:100%;
@@ -40,6 +50,16 @@ img
     overflow-wrap:break-word;
     height: 200px;
 }
+input[type = text], select {
+    width: 100%;
+    padding: 5px 5px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
 
 /*disables people highlighting the squares */
 .disable-select 
@@ -50,3 +70,54 @@ user-select: none; /* supported by Chrome and Opera */
 -moz-user-select: none; /* Firefox */
 -ms-user-select: none; /* Internet Explorer/Edge */
 }
+
+
+
+/* The sidenav */
+.sidenav {
+    height: 100%;
+    width: 200px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #2b6777;
+    overflow-x: hidden;
+    padding-top: 20px;
+  }
+  
+  
+  /* The navigation menu links */
+  .sidenav a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+  }
+  
+  /* When you mouse over the navigation links, change their color */
+  .sidenav a:hover {
+    color: #f1f1f1;
+  }
+  
+  /* Position and style the close button (top right corner) */
+  .sidenav .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+  }
+  
+  /* Style page content - use this if you want to push the page content to the right when you open the side navigation */
+  #main {
+    margin-left: 200px;
+  }
+  
+  /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+  @media screen and (max-height: 450px) {
+    .sidenav {padding-top: 15px;}
+    .sidenav a {font-size: 18px;}
+  }

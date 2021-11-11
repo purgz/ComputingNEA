@@ -15,10 +15,10 @@ const io = new Server(server);
 
 //caching connection to database -- free mysql hosting
 const db = mysql.createConnection({
-    host:"localhost",
-    user:"root",
-    password:"",
-    database:"logininfo"
+    host:"sql4.freemysqlhosting.net",
+    user:"sql4450253",
+    password:"Q8wNTFGssf",
+    database:"sql4450253"
 });
 
 //connect to db and throw any errors
@@ -170,7 +170,21 @@ gameNamespace.on("connection",(socket)=>{
 
     //initialisation emits
     gameNamespace.to(session.roomname).emit("Render",Rooms[session.roomname].gamestate); 
+
     gameNamespace.to(socket.id).emit("Orientation",session.yourColour)
+
+    let player1 = Rooms[session.roomname].player1;
+    let player2 = Rooms[session.roomname].player2;
+    let player2Colour = Rooms[session.roomname].player2Colour;
+
+    if (player2 && session.yourColour !== "spectator"){
+        gameNamespace.to(session.roomname).emit("playerNames",player1,player2);
+    }
+    if (session.yourColour == player2Colour){
+        gameNamespace.to(socket.id).emit("swapName");
+    }
+
+    
 
     //handling player moves
     socket.on("move-request",(currentCell,newSquare)=>{
@@ -211,14 +225,14 @@ server.listen(process.env.PORT || 3000,()=>{
 //generates the defualt board layout
 //each index represents a piece, each piece is notated as first letter - colour - second letter - piece
 function GenerateDefaultPosition() {
-    return ["bR", "", "", "bQ", "bK", "", "bN", "bR",
+    return ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR",
+        "bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
-        "", "", "", "", "", "", "", "",
-        "", "", "", "", "", "", "", "",
-        "wR", "wN", "wB", "wQ", "wK", "","", "wR"
+        "wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP",
+        "wR", "wN", "wB", "wQ", "wK", "wB","wN", "wR"
     ];
 }
 //consts

@@ -22,6 +22,7 @@ var cells = document.getElementsByClassName("square");
 var newSquare;
 var currentCell;
 
+
 document.addEventListener("dragstart",dragStart);
 document.addEventListener("dragover",dragOver);
 document.addEventListener("dragend",dragEnd);
@@ -107,7 +108,7 @@ function Orientation(colour){
         for (var i = 0; i < cells.length;i++)
         {
             cells[i].style.transform = "rotate(180deg)";
-        }                                        
+        }                        
     }
 }
 
@@ -118,6 +119,23 @@ socket.on("Render",(gamestate)=>{
 
 socket.on("Orientation",(colour)=>{
     Orientation(colour);
+})
+
+socket.on("playerNames",(name1,name2)=>{
+    
+    let player1 = document.getElementById("player1")
+    let player2 = document.getElementById("player2")
+
+    player1.innerHTML = name1;
+    player2.innerHTML = name2;
+})
+socket.on("swapName",()=>{
+    let player1 = document.getElementById("player1")
+    let player2 = document.getElementById("player2")
+
+    temp = player1.innerHTML;
+    player1.innerHTML = player2.innerHTML;
+    player2.innerHTML = temp;
 })
 
 socket.on("player-disconnect",()=>{
@@ -133,3 +151,5 @@ socket.on("game-over",(username)=>{
     document.removeEventListener("dragover",dragOver);
     document.removeEventListener ("dragend",dragEnd);
 })
+
+
