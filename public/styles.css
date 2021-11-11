@@ -6,6 +6,7 @@ body{
 /*styling for chess elements to create a board and pieces in the correct locations */
 img 
 {        
+    
     margin:auto;
     width:100%;
 }
@@ -30,6 +31,7 @@ img
 }
 .board
 {
+    
     width: 40%;
     height: 40%;
     display: inline-block;

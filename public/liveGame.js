@@ -27,11 +27,9 @@ document.addEventListener("dragstart",dragStart);
 document.addEventListener("dragover",dragOver);
 document.addEventListener("dragend",dragEnd);
 
-document.addEventListener("touchstart", dragStart);
-document.addEventListener("touchend", touchEnd)
-
 //find the square id of the piece selected
 function dragStart(event){
+    
     currentCell = event.target.parentNode.id;
     console.log(currentCell)
 }
@@ -47,19 +45,11 @@ function dragOver(event){
 }
 //sends the move info to the server to be checked and calculated
 function dragEnd(event){
-    socket.emit("move-request",currentCell,newSquare);
-}
-
-function touchEnd(event){
-    let newElement = document.elementFromPoint(event.changedTouches[0].clientX,event.changedTouches[0].clientY);
-    if (newElement.className.split(" ")[0] == "piece"){
-        newSquare = newElement.parentNode.id;
-    } else{
-        newSquare = newElement.id;
-    }
     
     socket.emit("move-request",currentCell,newSquare);
 }
+
+
 
 //function for rendering the gamestate send from the server
 function RenderBoard(gamestate){
