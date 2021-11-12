@@ -1,12 +1,10 @@
 //libraries
-
 const express = require("express");
 const mysql = require("mysql");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const http = require("http");
 const { Server } = require("socket.io");
-const e = require("cors");
 
 //creating server
 const app = express();
@@ -15,10 +13,10 @@ const io = new Server(server);
 
 //caching connection to database -- free mysql hosting
 const db = mysql.createConnection({
-    host:"sql4.freemysqlhosting.net",
-    user:"sql4450253",
-    password:"Q8wNTFGssf",
-    database:"sql4450253"
+    host:"remotemysql.com",
+    user:"SIOFJ8YEhU",
+    password:"2imlIYiFAh",
+    database:"SIOFJ8YEhU"
 });
 
 //connect to db and throw any errors
@@ -189,9 +187,11 @@ gameNamespace.on("connection",(socket)=>{
     //handling player moves
     socket.on("move-request",(currentCell,newSquare)=>{
         //console.log(currentCell,newSquare);
-        if (Rooms[session.roomname].UpdateBoard(currentCell,newSquare,session.yourColour)){
-            console.log("send to client game over")
-            gameNamespace.to(session.roomname).emit("game-over",session.username)
+        let move = Rooms[session.roomname].UpdateBoard(currentCell,newSquare,session.yourColour);
+        if (move == "Checkmate"){
+            gameNamespace.to(session.roomname).emit("game-over",session.username,"Checkmate")
+        } else if (move == "Stalemate"){
+            gameNamespace.to(session.roomname).emit("game-over",session.username,"Stalemate")
         }
         gameNamespace.to(session.roomname).emit("Render",Rooms[session.roomname].gamestate);
         session.save();
@@ -217,7 +217,7 @@ gameNamespace.on("connection",(socket)=>{
 
 
 //start server on port 3000
-server.listen(process.env.PORT || 3000,()=>{
+server.listen(process.env.PORT || 8080,()=>{
     console.log("server is running on port 3000");
 })
 
@@ -376,10 +376,10 @@ class GameRoom {
         }
 
         console.log("short castle "+this.player1ShortCastle,this.player2ShortCastle+" long castle "+this.player1LongCastle,this.player2LongCastle);
+
         //checks whether the game is over by checkmate or stalemate on each move.
-        if(IsGameOver(this.gamestate,opponentColour,this.player1)){
-            return true;
-        }
+        return IsGameOver(this.gamestate,opponentColour,this.player1);
+       
     }
 
     LegalMoves(currentCell,playerColour,gamestate){
@@ -747,11 +747,11 @@ function IsGameOver(gamestate,playerColour,roomname){
     }
     //differentiates between checkmate and stalemate
     if (checkMate){
-        console.log("Checkmate");
+        return "Checkmate";
     } else {
-        console.log("stalemate");
+        return "Stalemate";
     }
-    return true;
+    
 }
 
 //function for removing castling rights

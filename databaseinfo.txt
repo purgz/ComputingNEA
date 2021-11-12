@@ -1,7 +1,15 @@
+Username: SIOFJ8YEhU
 
-Server: sql4.freemysqlhosting.net
-Name: sql4446100
-Username: sql4446100
-Password: 4rWsGxg81e
-Port number: 3306
-VQK5573vyVe6(rH^
+Database name: SIOFJ8YEhU
+
+Password: 2imlIYiFAh
+
+Server: remotemysql.com
+
+CREATE DATABASE loginInfo;
+CREATE TABLE users (
+	id int NOT NULL AUTO_INCREMENT,
+	username varchar(255) NOT NULL,
+	password varchar(255) NOT NULL,
+	PRIMARY KEY (id)
+);

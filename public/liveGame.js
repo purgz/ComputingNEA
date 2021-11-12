@@ -151,11 +151,19 @@ socket.on("player-disconnect",()=>{
     document.removeEventListener ("dragend",dragEnd);
 })
 
-socket.on("game-over",(username)=>{
+socket.on("game-over",(username,type)=>{
     
     document.removeEventListener("dragstart",dragStart)
     document.removeEventListener("dragover",dragOver);
     document.removeEventListener ("dragend",dragEnd);
+
+    if (type == "Checkmate"){
+        alert(username+" wins by "+type)
+    } else{
+        alert(type)
+    }
+    document.getElementById("gameOver").style.display = "";
+    //show popup when game over
 })
 
 
