@@ -111,11 +111,13 @@ function Orientation(colour){
     if (colour == "black")
     {
         document.getElementsByClassName("board")[0].style.transform = "rotate(180deg)";
+        document.getElementById("gameOver").style.transform = "rotate(180deg)";
         for (var i = 0; i < cells.length;i++)
         {
             cells[i].style.transform = "rotate(180deg)";
         }                        
     }
+    
 }
 
 //recives the gamestate from server and renders for the players.
@@ -152,18 +154,67 @@ socket.on("player-disconnect",()=>{
 })
 
 socket.on("game-over",(username,type)=>{
-    
+    //remove event listeners
     document.removeEventListener("dragstart",dragStart)
     document.removeEventListener("dragover",dragOver);
     document.removeEventListener ("dragend",dragEnd);
 
+    //disable resign and draw btn
+    document.getElementById("DrawBtn").disabled = true;
+    document.getElementById("ResignBtn").disabled = true;
+
+    let winnerInfo = document.getElementById("winnerInfo");
     if (type == "Checkmate"){
-        alert(username+" wins by "+type)
-    } else{
-        alert(type)
+        //alert(username+" wins by "+type)
+        winnerInfo.innerHTML = username + " wins by " + type;
+    } else if (type =="Stalemate"){
+        //alert(type)
+        winnerInfo.innerHTML = type;
+    } else if (type == "Resign"){
+        winnerInfo.innerHTML = username+ " resigned";
+    } else if (type == "Draw"){
+        winnerInfo.innerHTML = "Draw by agreement";
+
     }
-    document.getElementById("gameOver").style.display = "";
+    document.getElementById("gameOver").style.display = "block";
     //show popup when game over
 })
 
+socket.on("OfferDraw",(username)=>{
+    //console.log(username+" offers a draw")
+    let btn1 = document.createElement("button");
+    btn1.innerHTML = "accept draw";
+    let btn2 = document.createElement("button");
+    btn2.innerHTML = "decline draw";
 
+    btn1.onclick = function (){
+        socket.emit("AcceptDraw");
+    }
+    btn2.onclick = function (){
+        let div1 = document.getElementById("DrawOffer");
+
+        div1.parentNode.removeChild(div1);
+
+    }
+
+    let div = document.getElementById("DrawOffer");
+
+    div.appendChild(btn1);
+    div.appendChild(btn2);
+})
+
+socket.on("RemoveButtons",()=>{
+    let div1 = document.getElementById("OfferDraw");
+    let div2 = document.getElementById("DrawOffer");
+
+    div1.parentNode.removeChild(div1);
+    div2.parentNode.removeChild(div2);
+})
+
+function Resign(){
+    socket.emit("Resign");
+}
+
+function OfferDraw(){
+    socket.emit("OfferDraw");
+}

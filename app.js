@@ -13,10 +13,10 @@ const io = new Server(server);
 
 //caching connection to database -- free mysql hosting
 const db = mysql.createConnection({
-    host:"remotemysql.com",
-    user:"SIOFJ8YEhU",
-    password:"2imlIYiFAh",
-    database:"SIOFJ8YEhU"
+    host:"localhost",
+    user:"root",
+    password:"Hen12345",
+    database:"loginInfo"
 });
 
 //connect to db and throw any errors
@@ -182,6 +182,9 @@ gameNamespace.on("connection",(socket)=>{
         gameNamespace.to(socket.id).emit("swapName");
     }
 
+    if (session.yourColour == "spectator"){
+        gameNamespace.to(socket.id).emit("RemoveButtons");
+    }
     
 
     //handling player moves
@@ -212,12 +215,22 @@ gameNamespace.on("connection",(socket)=>{
         console.log(gameRooms)
         session.save();
     })
-    
+
+    socket.on("Resign",()=>{
+        gameNamespace.to(session.roomname).emit("game-over",session.username,"Resign");
+    })
+    socket.on("OfferDraw",()=>{
+        socket.broadcast.to(session.roomname).emit("OfferDraw",(session.username));
+    }) 
+    socket.on("AcceptDraw",()=>{
+        gameNamespace.to(session.roomname).emit("game-over",session.username,"Draw");
+    })
+  
 });
 
 
 //start server on port 3000
-server.listen(process.env.PORT || 8080,()=>{
+server.listen(process.env.PORT || 3000,()=>{
     console.log("server is running on port 3000");
 })
 

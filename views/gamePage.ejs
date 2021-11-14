@@ -17,8 +17,11 @@
       </div>
     
     <div id = "main">
+    
+    <div id = "boardwrapper">
     <div id = "player2" class = "player-name">Player</div>
     <div class = "board disable-select">
+        
         <div>
             <div id = "1" class = "light square"></div>
             <div id = "2" class = "dark square"></div>
@@ -99,10 +102,22 @@
             <div id = "63" class = "dark square"></div>
             <div id = "64" class = "light square"></div>
         </div>
-        <div id = "gameOver"></div>
+        <div id = "gameOver">
+            <p id = "gameOver2">Game over</p>
+            <p id = "winnerInfo"></p>
+        </div>
+        
+    </div>
+    <div id = "player1" class = "player-name">Player</div>
     </div>
 
     <div class = "container">
+
+        <div id = "OfferDraw">
+            <button id = "DrawBtn" onclick="OfferDraw()">Offer draw</button>
+            <button id = "ResignBtn" onclick="Resign()">Resign</button>
+        </div>
+
 
         <h1 id = "header">Chat</h1>
 
@@ -116,9 +131,9 @@
                 <input type="submit" id = "sendchat" >
             </form>
         </div>
-
+        <div id = "DrawOffer"></div>
     </div>
-    <div id = "player1" class = "player-name">Player</div>
+    
     </div>
 
     
