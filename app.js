@@ -15,7 +15,7 @@ const io = new Server(server);
 const db = mysql.createConnection({
     host:"localhost",
     user:"root",
-    password:"Hen12345",
+    password:"",
     database:"loginInfo"
 });
 
@@ -216,6 +216,7 @@ gameNamespace.on("connection",(socket)=>{
         session.save();
     })
 
+    //socket emits for specific game ending types.
     socket.on("Resign",()=>{
         gameNamespace.to(session.roomname).emit("game-over",session.username,"Resign");
     })
@@ -224,6 +225,11 @@ gameNamespace.on("connection",(socket)=>{
     }) 
     socket.on("AcceptDraw",()=>{
         gameNamespace.to(session.roomname).emit("game-over",session.username,"Draw");
+    })
+
+    socket.on("chat", (msg)=>{
+        console.log("test")
+        gameNamespace.to(session.roomname).emit("chat",msg,session.username);
     })
   
 });

@@ -178,13 +178,17 @@ socket.on("game-over",(username,type)=>{
     }
     document.getElementById("gameOver").style.display = "block";
     //show popup when game over
+
+  
 })
 
 socket.on("OfferDraw",(username)=>{
     //console.log(username+" offers a draw")
     let btn1 = document.createElement("button");
     btn1.innerHTML = "accept draw";
+    btn1.className = "button button2";
     let btn2 = document.createElement("button");
+    btn2.className = "button button2";
     btn2.innerHTML = "decline draw";
 
     btn1.onclick = function (){
@@ -218,3 +222,29 @@ function Resign(){
 function OfferDraw(){
     socket.emit("OfferDraw");
 }
+
+
+
+//code for simple chat
+var form = document.getElementById("form");
+var input = document.getElementById("input");
+form.addEventListener("submit",function(e){
+    e.preventDefault(); //prevents form from submitting when clicked.
+    if(input.value){
+        msg = input.value;
+        socket.emit("chat",msg)
+        input.value = "";
+    }
+});
+
+
+
+socket.on("chat",(msg,name)=>{
+    var item = document.createElement("li");
+
+    item.textContent = name +" says: " + msg;
+    messages.appendChild(item);
+
+    var chatbox = document.getElementById("chatlist");
+    chatbox.scrollTop = chatbox.scrollHeight;
+})
