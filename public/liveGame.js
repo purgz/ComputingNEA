@@ -182,29 +182,32 @@ socket.on("game-over",(username,type)=>{
   
 })
 
+//user is offered a draw
 socket.on("OfferDraw",(username)=>{
     //console.log(username+" offers a draw")
-    let btn1 = document.createElement("button");
-    btn1.innerHTML = "accept draw";
-    btn1.className = "button button2";
-    let btn2 = document.createElement("button");
-    btn2.className = "button button2";
-    btn2.innerHTML = "decline draw";
+    //create buttons to accept/decline
+    let btnAccept = document.createElement("button");
+    btnAccept.innerHTML = "accept draw";
+    btnAccept.className = "button button2";
+    let btnDecline = document.createElement("button");
+    btnDecline.className = "button button2";
+    btnDecline.innerHTML = "decline draw";
 
-    btn1.onclick = function (){
+    //add onclick functions for both
+    btnAccept.onclick = function (){
         socket.emit("AcceptDraw");
     }
-    btn2.onclick = function (){
+    btnDecline.onclick = function (){
         let div1 = document.getElementById("DrawOffer");
 
-        div1.parentNode.removeChild(div1);
-
+        //if decline - remove the buttons
+        div1.removeChild(btnAccept);
+        div1.removeChild(btnDecline)
     }
-
+    // add the buttons to the draw offer divider
     let div = document.getElementById("DrawOffer");
-
-    div.appendChild(btn1);
-    div.appendChild(btn2);
+    div.appendChild(btnAccept);
+    div.appendChild(btnDecline);
 })
 
 socket.on("RemoveButtons",()=>{
