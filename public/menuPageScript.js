@@ -11,11 +11,21 @@ function JoinRoom(name){
     return true;
 }
 //new game is added to list - creates form element and adds attributes/actions.
-socket.on("NewGame",(games)=>{
+socket.on("NewGame",(games,spectateGames)=>{
    
     var gamelist = document.getElementById("gamelist");     
-    gamelist.innerHTML="";         //clear gamelist to display new list of rooms
+    gamelist.innerHTML = "";         //clear gamelist to display new list of rooms
 
+    RenderButton(gamelist,games,"Join");
+
+    var spectateList = document.getElementById("spectatelist");
+    spectateList.innerHTML = "";
+
+    RenderButton(spectateList,spectateGames,"Spectate")
+})
+
+//generalised the rendering of buttons so that a list can be for spectate games and also games to join
+function RenderButton(gamelist,games,type){
     for (let i=0; i<games.length;i++){
         //for each room create list element, form and input inside of form
         let li = document.createElement("li");
@@ -27,11 +37,10 @@ socket.on("NewGame",(games)=>{
         myform.setAttribute("onsubmit",`return JoinRoom(${games[i]})`); //joins the correct game room,onsubmit
         
         butn.setAttribute("type","submit");
-        butn.setAttribute("value","Join "+games[i]+"'s Game");
+        butn.setAttribute("value",type+" "+games[i]+"'s Game");
         myform.appendChild(butn);
         
         li.appendChild(myform)
         gamelist.appendChild(li);   //add each element to the outputted list.
     }
-})
-
+}

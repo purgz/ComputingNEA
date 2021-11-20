@@ -117,6 +117,7 @@ app.post("/createaccount",(req,res)=>{
 //-----------------------------------------------------------------------------------------------------
 //socket.io / main game code
 var gameRooms = [];  //holds the games to be displayed in menu
+var spectateRooms = []; //holds games you can watch
 var Rooms = {};     //holds the live game objects for each game
 
 const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
@@ -128,19 +129,25 @@ io.on("connection", (socket) => {
     session.roomname = "";
     console.log(session.username)
     
-    io.emit("NewGame",gameRooms);
+    io.emit("NewGame",gameRooms,spectateRooms);
     socket.on("CreateGame",()=>{
         console.log("Creating game")
         session.roomname = session.username.slice(); //creates copy instead of reference
         gameRooms.push(session.username.slice());
         console.log(gameRooms)
-        io.emit("NewGame",gameRooms);
+        io.emit("NewGame",gameRooms,spectateRooms);
         session.save();
     })
 
     socket.on("JoinRoom",(roomName)=>{
         console.log("joining "+roomName)
         session.roomname = roomName
+        if (gameRooms.includes(session.roomname)){
+            spectateRooms.push(session.roomname);
+            gameRooms.splice(gameRooms.indexOf(session.roomname),1)
+        }
+        console.log(gameRooms,spectateRooms)
+        io.emit("NewGame",gameRooms,spectateRooms)
         session.save();  //means can use the session vars on multiple socket.io connections.
     });
 });
@@ -210,9 +217,12 @@ gameNamespace.on("connection",(socket)=>{
         
         if (gameRooms.includes(session.roomname)){ //prevents removing other games from list when last player dc
             gameRooms.splice(gameRooms.indexOf(session.roomname),1);
+        } 
+        if (spectateRooms.includes(session.roomname)){  //remove from specate rooms
+            spectateRooms.splice(spectateRooms.indexOf(session.roomname),1);
         }
         
-        console.log(gameRooms)
+        console.log(gameRooms,spectateRooms)
         session.save();
     })
 
@@ -228,7 +238,6 @@ gameNamespace.on("connection",(socket)=>{
     })
 
     socket.on("chat", (msg)=>{
-        console.log("test")
         gameNamespace.to(session.roomname).emit("chat",msg,session.username);
     })
   

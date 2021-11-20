@@ -5,15 +5,28 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu Page</title>
+    <link rel = "stylesheet" href = "styles.css">
 </head>
 <body>
-    <form action = "/newGame" onsubmit = NewGame()>
-        <input value = "Create Game" type = submit>
-    </form>
-    
-    <ol id = "gamelist"></ol>
+    <div id="mySidenav" class="sidenav">
+        <a href="https://github.com/purgz/ComputingNEA" target="_blank" rel="noopener noreferrer">Source code</a>
+        <a href = "/">Logout</a>
+    </div>
+    <div id = "main">
+        <form id = "createGame" action = "/newGame" onsubmit = NewGame()>
+            <input class = "button button2" value = "Create Game" type = submit>
+        </form>
+        <div class = "listContainer">
+            <h2>Play</h2>
+            <ul id = "gamelist"></ul>
+        </div>
+        <div class = "listContainer">
+            <h2>Spectate</h2>
+            <ul id = "spectatelist"></ul>
+        </div>
+    <div id = "main">
+
     <script src="/socket.io/socket.io.js"></script>
     <script src = "menuPageScript.js"></script>
-    
 </body>
 </html>

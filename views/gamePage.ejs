@@ -7,137 +7,121 @@
     <title>Live Game</title>
     <link rel = "stylesheet" href = "styles.css">
 </head>
-<body>
-  
+<body>  
     <div id="mySidenav" class="sidenav">
         <a href="menuPage">Menu</a>
         <a href="https://github.com/purgz/ComputingNEA" target="_blank" rel="noopener noreferrer">Source code</a>
-      </div>
-    
+    </div>
+
     <div id = "main">
-    
-    <div id = "boardwrapper">
-    <div id = "player2" class = "player-name">Player</div>
-    <div class = "board disable-select">
-        
-        <div>
-            <div id = "1" class = "light square"></div>
-            <div id = "2" class = "dark square"></div>
-            <div id = "3" class = "light square"></div>
-            <div id = "4" class = "dark square"></div>
-            <div id = "5" class = "light square"></div>
-            <div id = "6" class = "dark square"></div>
-            <div id = "7" class = "light square"></div>
-            <div id = "8" class = "dark square"></div>
-        </div>
-        <div>
-            <div id = "9" class = "dark square"></div>
-            <div id = "10" class = "light square"></div>
-            <div id = "11" class = "dark square"></div>
-            <div id = "12" class = "light square"></div>
-            <div id = "13" class = "dark square"></div>
-            <div id = "14" class = "light square"></div>
-            <div id = "15" class = "dark square"></div>
-            <div id = "16" class = "light square"></div>
-        </div>
-        <div>
-            <div id = "17" class = "light square"></div>
-            <div id = "18" class = "dark square"></div>
-            <div id = "19" class = "light square"></div>
-            <div id = "20" class = "dark square"></div>
-            <div id = "21" class = "light square"></div>
-            <div id = "22" class = "dark square"></div>
-            <div id = "23" class = "light square"></div>
-            <div id = "24" class = "dark square"></div>
-        </div>
-        <div>
-            <div id = "25" class = "dark square"></div>
-            <div id = "26" class = "light square"></div>
-            <div id = "27" class = "dark square"></div>
-            <div id = "28" class = "light square"></div>
-            <div id = "29" class = "dark square"></div>
-            <div id = "30" class = "light square"></div>
-            <div id = "31" class = "dark square"></div>
-            <div id = "32" class = "light square"></div>
-        </div>
-        <div>
-            <div id = "33" class = "light square"></div>
-            <div id = "34" class = "dark square"></div>
-            <div id = "35" class = "light square"></div>
-            <div id = "36" class = "dark square"></div>
-            <div id = "37" class = "light square"></div>
-            <div id = "38" class = "dark square"></div>
-            <div id = "39" class = "light square"></div>
-            <div id = "40" class = "dark square"></div>
-        </div>
-        <div>
-            <div id = "41" class = "dark square"></div>
-            <div id = "42" class = "light square"></div>
-            <div id = "43" class = "dark square"></div>
-            <div id = "44" class = "light square"></div>
-            <div id = "45" class = "dark square"></div>
-            <div id = "46" class = "light square"></div>
-            <div id = "47" class = "dark square"></div>
-            <div id = "48" class = "light square"></div>
-        </div>
-        <div>
-            <div id = "49" class = "light square"></div>
-            <div id = "50" class = "dark square"></div>
-            <div id = "51" class = "light square"></div>
-            <div id = "52" class = "dark square"></div>
-            <div id = "53" class = "light square"></div>
-            <div id = "54" class = "dark square"></div>
-            <div id = "55" class = "light square"></div>
-            <div id = "56" class = "dark square"></div>
-        </div>
-        <div>
-            <div id = "57" class = "dark square"></div>
-            <div id = "58" class =  "light square"></div>
-            <div id = "59" class = "dark square"></div>
-            <div id = "60" class = "light square"></div>
-            <div id = "61" class = "dark square"></div>
-            <div id = "62" class = "light square"></div>
-            <div id = "63" class = "dark square"></div>
-            <div id = "64" class = "light square"></div>
-        </div>
-        <div id = "gameOver">
-            <p id = "gameOver2">Game over</p>
-            <p id = "winnerInfo"></p>
-        </div>
-        
-    </div>
-    <div id = "player1" class = "player-name">Player</div>
-    </div>
-
-    <div class = "container">
-
-        <div id = "OfferDraw">
-            <button class = "button button2" id = "DrawBtn" onclick="OfferDraw()">Offer draw</button>
-            <button class = "button button2" id = "ResignBtn" onclick="Resign()">Resign</button>
-        </div>
-
-        <h1 id = "header">Chat</h1>
-
-        <div id = "chatwrapper">
-            <div id = "chatlist">
-                <ul id = "messages" style="list-style-type:none"></ul>
+        <div id = "boardwrapper">
+            <div id = "player2" class = "player-name">Player</div>
+            <div class = "board disable-select">
+                <div>
+                    <div id = "1" class = "light square"></div>
+                    <div id = "2" class = "dark square"></div>
+                    <div id = "3" class = "light square"></div>
+                    <div id = "4" class = "dark square"></div>
+                    <div id = "5" class = "light square"></div>
+                    <div id = "6" class = "dark square"></div>
+                    <div id = "7" class = "light square"></div>
+                    <div id = "8" class = "dark square"></div>
+                </div>
+                <div>
+                    <div id = "9" class = "dark square"></div>
+                    <div id = "10" class = "light square"></div>
+                    <div id = "11" class = "dark square"></div>
+                    <div id = "12" class = "light square"></div>
+                    <div id = "13" class = "dark square"></div>
+                    <div id = "14" class = "light square"></div>
+                    <div id = "15" class = "dark square"></div>
+                    <div id = "16" class = "light square"></div>
+                </div>
+                <div>
+                    <div id = "17" class = "light square"></div>
+                    <div id = "18" class = "dark square"></div>
+                    <div id = "19" class = "light square"></div>
+                    <div id = "20" class = "dark square"></div>
+                    <div id = "21" class = "light square"></div>
+                    <div id = "22" class = "dark square"></div>
+                    <div id = "23" class = "light square"></div>
+                    <div id = "24" class = "dark square"></div>
+                </div>
+                <div>
+                    <div id = "25" class = "dark square"></div>
+                    <div id = "26" class = "light square"></div>
+                    <div id = "27" class = "dark square"></div>
+                    <div id = "28" class = "light square"></div>
+                    <div id = "29" class = "dark square"></div>
+                    <div id = "30" class = "light square"></div>
+                    <div id = "31" class = "dark square"></div>
+                    <div id = "32" class = "light square"></div>
+                </div>
+                <div>
+                    <div id = "33" class = "light square"></div>
+                    <div id = "34" class = "dark square"></div>
+                    <div id = "35" class = "light square"></div>
+                    <div id = "36" class = "dark square"></div>
+                    <div id = "37" class = "light square"></div>
+                    <div id = "38" class = "dark square"></div>
+                    <div id = "39" class = "light square"></div>
+                    <div id = "40" class = "dark square"></div>
+                </div>
+                <div>
+                    <div id = "41" class = "dark square"></div>
+                    <div id = "42" class = "light square"></div>
+                    <div id = "43" class = "dark square"></div>
+                    <div id = "44" class = "light square"></div>
+                    <div id = "45" class = "dark square"></div>
+                    <div id = "46" class = "light square"></div>
+                    <div id = "47" class = "dark square"></div>
+                    <div id = "48" class = "light square"></div>
+                </div>
+                <div>
+                    <div id = "49" class = "light square"></div>
+                    <div id = "50" class = "dark square"></div>
+                    <div id = "51" class = "light square"></div>
+                    <div id = "52" class = "dark square"></div>
+                    <div id = "53" class = "light square"></div>
+                    <div id = "54" class = "dark square"></div>
+                    <div id = "55" class = "light square"></div>
+                    <div id = "56" class = "dark square"></div>
+                </div>
+                <div>
+                    <div id = "57" class = "dark square"></div>
+                    <div id = "58" class =  "light square"></div>
+                    <div id = "59" class = "dark square"></div>
+                    <div id = "60" class = "light square"></div>
+                    <div id = "61" class = "dark square"></div>
+                    <div id = "62" class = "light square"></div>
+                    <div id = "63" class = "dark square"></div>
+                    <div id = "64" class = "light square"></div>
+                </div>
+                <div id = "gameOver">
+                    <p id = "gameOver2">Game over</p>
+                    <p id = "winnerInfo"></p>
+                </div>  
             </div>
-            
-           
-            <form id="form" >
-                <input id="input" type = "text" autocomplete="off" />
-                <input type="submit" id = "sendchat" >
-            </form>
-            
+            <div id = "player1" class = "player-name">Player</div>
         </div>
-
-      
-        <div id = "DrawOffer"></div>
+        <div class = "container">
+            <div id = "OfferDraw">
+                <button class = "button button2" id = "DrawBtn" onclick="OfferDraw()">Offer draw</button>
+                <button class = "button button2" id = "ResignBtn" onclick="Resign()">Resign</button>
+            </div>
+            <h1 id = "header">Chat</h1>
+            <div id = "chatwrapper">
+                <div id = "chatlist">
+                    <ul id = "messages" style="list-style-type:none"></ul>
+                </div>
+                <form id="form" >
+                    <input id="input" type = "text" autocomplete="off" />
+                    <input type="submit" id = "sendchat" >
+                </form>
+            </div>
+            <div id = "DrawOffer"></div>
+        </div>
     </div>
-    
-    </div>
-
-    
 
     <script src="/socket.io/socket.io.js"></script>
     <script src = "liveGame.js"></script>
