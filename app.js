@@ -278,6 +278,8 @@ class GameRoom {
         this.player2LongCastle = true;
         this.player1ShortCastle = true;
         this.player2ShortCastle = true;
+
+        this.enPassant;
     }
 
     //adds users to the game and gives them their session colour variables - spectators do not get colour
@@ -313,6 +315,7 @@ class GameRoom {
         newSquare -= 1;
         var opponentColour;
         
+        
         //calculate opponent colour
         if (playerColour == this.player1Colour){
             opponentColour = this.player2Colour;
@@ -332,7 +335,26 @@ class GameRoom {
             //checks for pawn promotion
             if (this.gamestate[currentCell][1] == "P"){
                 this.Promotion(currentCell,newSquare);
+                if (newSquare == currentCell + 16 || newSquare == currentCell - 16){
+                    this.enPassant = newSquare;
+
+                } else{
+                    this.enPassant = "";
+                }
+            } else{
+                this.enPassant = "";
             }
+            //enpassant move
+            if (this.gamestate[currentCell][1] == "P"){
+                if (this.gamestate[newSquare]==""){
+                    if (newSquare == currentCell - 9 || newSquare == currentCell + 7){
+                        this.gamestate[currentCell-1] = "";
+                    } else if(newSquare == currentCell + 9 || newSquare == currentCell - 7){
+                        this.gamestate[currentCell+1] = "";
+                    }
+                }
+            }
+
 
             this.gamestate[newSquare] = this.gamestate[currentCell];
             this.gamestate[currentCell] = "";
@@ -395,7 +417,7 @@ class GameRoom {
         }
 
         console.log("short castle "+this.player1ShortCastle,this.player2ShortCastle+" long castle "+this.player1LongCastle,this.player2LongCastle);
-
+        
         //checks whether the game is over by checkmate or stalemate on each move.
         return IsGameOver(this.gamestate,opponentColour,this.player1);
        
@@ -434,7 +456,7 @@ class GameRoom {
                 tempMoves = KingMoves(currentCell,gamestate,opPieces);
                 break;
             case piece = "P":
-                tempMoves = PawnMoves(currentCell,gamestate,opPieces,playerColour)
+                tempMoves = PawnMoves(currentCell,gamestate,opPieces,playerColour,this.enPassant)
                 break;  
             default:
                 break;
@@ -631,7 +653,7 @@ function KingMoves(currentCell, gamestate, opPieces){
     return kingMoves;
 }
 
-function PawnMoves(currentCell,gamestate,opPieces,yourColour){ 
+function PawnMoves(currentCell,gamestate,opPieces,yourColour,enPassant){ 
     //find direction which your pawn can move.
     var dir;
     if (yourColour == "white"){
@@ -660,6 +682,8 @@ function PawnMoves(currentCell,gamestate,opPieces,yourColour){
         }
     }
     pawnMoves = pawnMoves.concat((PawnTakeMoves(currentCell,gamestate,opPieces,dir)));
+    
+    pawnMoves.push(EnPassant(enPassant,currentCell,yourColour,gamestate))
     return pawnMoves;
 }
 //returns the diagonal take squares for selected pawn
@@ -697,11 +721,42 @@ function PawnTakeMoves(currentCell,gamestate,opPieces,dir){
     return takeMoves;
 }
 
+function EnPassant(enPassant,currentCell,yourColour,gamestate){
+    let newSquare;
+    
+    if (currentCell + 1 == enPassant){
+        if (yourColour == "white"){
+            newSquare = currentCell - 7;
+        } else {
+            newSquare = currentCell+9;
+        }
+    } else if (currentCell - 1 == enPassant){
+        if (yourColour == "white"){
+            newSquare =  currentCell-9;
+        } else {
+            newSquare = currentCell+7;
+        }
+    }
+    
+    if (gamestate[newSquare] == ""){
+        return newSquare;
+    }
+}
 
 //stops moves when you are in check when given the opponent legal moves
 function CheckAfterMove(gamestate,playerColour,currentCell,newSquare,roomname){
     //creates a clone of gamestate to test move
     tempGamestate = Array.from(gamestate);
+    if (tempGamestate[currentCell][1] == "P"){
+        if (tempGamestate[newSquare]==""){
+            if (newSquare == currentCell - 9 || newSquare == currentCell + 7){
+                tempGamestate[currentCell-1] = "";
+            } else if(newSquare == currentCell + 9 || newSquare == currentCell - 7){
+                tempGamestate[currentCell+1] = "";
+            }
+        }
+    }
+
     tempGamestate[newSquare] = tempGamestate[currentCell];
     tempGamestate[currentCell] = "";
 
