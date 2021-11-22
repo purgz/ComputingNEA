@@ -15,7 +15,7 @@ const io = new Server(server);
 const db = mysql.createConnection({
     host:"localhost",
     user:"root",
-    password:"Hen12345",
+    password:"",
     database:"loginInfo"
 });
 
@@ -178,13 +178,22 @@ gameNamespace.on("connection",(socket)=>{
 
     gameNamespace.to(socket.id).emit("Orientation",session.yourColour)
 
+    //get the player1name player2name and player2colour for adding name to board
     let player1 = Rooms[session.roomname].player1;
     let player2 = Rooms[session.roomname].player2;
     let player2Colour = Rooms[session.roomname].player2Colour;
 
+    //if the second user connects add the names to the top and bottom
     if (player2 && session.yourColour !== "spectator"){
         gameNamespace.to(session.roomname).emit("playerNames",player1,player2);
+    //if spectator joins add names then swap them if player1 is black
+    } else if (session.yourColour == "spectator"){
+        gameNamespace.to(socket.id).emit("playerNames",player1,player2);
+        if (player2Colour == "white"){
+            gameNamespace.to(socket.id).emit("swapName");
+        }
     }
+    //if you are second player then swap the names.
     if (session.yourColour == player2Colour){
         gameNamespace.to(socket.id).emit("swapName");
     }
