@@ -44,20 +44,23 @@ app.use(function(req, res, next) {
     next();
 });
 
+
 //get pages
 //displaying the first page when a user goes to application link
 app.get("/",function(req,res){
+    
     req.session.loggedIn = false;
     res.render("loginPage.ejs");
+    req.session.save();
 })
 
 app.get("/menuPage",(req,res)=>{
-
     if (req.session.loggedIn){              //can only go to menu page if user logged in
         res.render("menuPage.ejs");
     } else {
         res.send("login to view this page");           //if someone tries to redirect themselves they will get this message
     }
+    req.session.save()
 });
 
 app.get("/createaccount",(req,res)=>{            //render users the create account page
@@ -78,6 +81,7 @@ app.post("/login",(req,res)=>{
             if (results.length>0){
                 req.session.loggedIn = true;    
                 req.session.username = username;  
+                
                 res.redirect("/menuPage");
             } else{
                 res.send("incorrect login");
@@ -127,16 +131,23 @@ io.on("connection", (socket) => {
     
     const session = socket.request.session;
     session.roomname = "";
-    console.log(session.username)
+    //console.log(session.username)
     
     io.emit("NewGame",gameRooms,spectateRooms);
     socket.on("CreateGame",()=>{
         console.log("Creating game")
-        session.roomname = session.username.slice(); //creates copy instead of reference
-        gameRooms.push(session.username.slice());
         console.log(gameRooms)
-        io.emit("NewGame",gameRooms,spectateRooms);
-        session.save();
+        if (gameRooms.includes(session.username) || spectateRooms.includes(session.username)){
+            console.log("cant create room")
+            session.InGame = true;
+            session.save();
+        } else{
+            session.roomname = session.username.slice(); //creates copy instead of reference
+            gameRooms.push(session.username.slice());
+            console.log(gameRooms)
+            io.emit("NewGame",gameRooms,spectateRooms);
+            session.save();
+        }
     })
 
     socket.on("JoinRoom",(roomName)=>{
@@ -146,14 +157,23 @@ io.on("connection", (socket) => {
             spectateRooms.push(session.roomname);
             gameRooms.splice(gameRooms.indexOf(session.roomname),1)
         }
-        console.log(gameRooms,spectateRooms)
+        
         io.emit("NewGame",gameRooms,spectateRooms)
         session.save();  //means can use the session vars on multiple socket.io connections.
     });
 });
 
 app.get("/newGame",(req,res)=>{
-    res.render("gamePage.ejs")
+    if (!req.session.InGame || (req.session.roomname == req.session.username)){
+        if (req.session.loggedIn){
+            res.render("gamePage.ejs")
+        } else {
+            res.send("login to view this page");
+        }
+    }  
+    else {
+        res.send("you already have a game created on your account")
+    }
 })
 //main game requests
 //keeeping the same session variables over the new page which will be the live game page.
@@ -232,6 +252,7 @@ gameNamespace.on("connection",(socket)=>{
         }
         
         console.log(gameRooms,spectateRooms)
+        session.InGame = false;
         session.save();
     })
 
@@ -262,14 +283,14 @@ server.listen(process.env.PORT || 3000,()=>{
 //generates the defualt board layout
 //each index represents a piece, each piece is notated as first letter - colour - second letter - piece
 function GenerateDefaultPosition() {
-    return ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR",
-        "bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP",
+    return ["bR", "", "", "bQ", "bK", "", "", "bR",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
-        "wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP",
-        "wR", "wN", "wB", "wQ", "wK", "wB","wN", "wR"
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "wR", "", "", "wQ", "wK", "","", "wR"
     ];
 }
 //consts
