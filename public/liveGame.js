@@ -147,7 +147,7 @@ socket.on("swapName",()=>{
 })
 
 socket.on("player-disconnect",()=>{
-    alert("user disconnected");
+    alert("opponent disconnected - closing game");
     document.removeEventListener("dragstart",dragStart)
     document.removeEventListener("dragover",dragOver);
     document.removeEventListener ("dragend",dragEnd);
