@@ -32,7 +32,7 @@ app.set("view-engine","ejs"); //using ejs templating engine to display dynamic p
 app.use(bodyParser.urlencoded({extended:true})); 
 //express session middleware
 var sessionMiddleware = session({
-    secret:"secret",
+    secret:"De.SHz{P^A!?q>>4~W",
 })
 app.use(sessionMiddleware);
 
@@ -283,14 +283,14 @@ server.listen(process.env.PORT || 3000,()=>{
 //generates the defualt board layout
 //each index represents a piece, each piece is notated as first letter - colour - second letter - piece
 function GenerateDefaultPosition() {
-    return ["bR", "", "", "bQ", "bK", "", "", "bR",
+    return ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR",
+        "bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
-        "", "", "", "", "", "", "", "",
-        "", "", "", "", "", "", "", "",
-        "wR", "", "", "wQ", "wK", "","", "wR"
+        "wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP",
+        "wR", "wN", "wB", "wQ", "wK", "wB","wN", "wR"
     ];
 }
 //consts
