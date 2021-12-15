@@ -206,8 +206,11 @@ socket.on("OfferDraw",(username)=>{
     }
     // add the buttons to the draw offer divider
     let div = document.getElementById("DrawOffer");
-    div.appendChild(btnAccept);
-    div.appendChild(btnDecline);
+    //if there are already draw buttons then dont add more
+    if (!div.hasChildNodes()){ 
+        div.appendChild(btnAccept);
+        div.appendChild(btnDecline);
+    }
 })
 
 socket.on("RemoveButtons",()=>{
