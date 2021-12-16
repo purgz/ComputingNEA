@@ -1,10 +1,7 @@
-Username: SIOFJ8YEhU
-
-Database name: SIOFJ8YEhU
-
-Password: 2imlIYiFAh
-
-Server: remotemysql.com
+a87P$2zaY6343Ww
+Database: chessgame
+Username: henry12345
+db4free.net
 
 CREATE DATABASE loginInfo;
 CREATE TABLE users (

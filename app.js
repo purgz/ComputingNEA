@@ -13,10 +13,10 @@ const io = new Server(server);
 
 //caching connection to database -- free mysql hosting
 const db = mysql.createConnection({
-    host:"localhost",
-    user:"root",
-    password:"",
-    database:"loginInfo"
+    host:"db4free.net",
+    user:"henry12345",
+    password:"a87P$2zaY6343Ww",
+    database:"chessgame"
 });
 
 //connect to db and throw any errors
@@ -897,5 +897,5 @@ function HasCastled(currentCell,newSquare,gamestate,canShortCastle,canLongCastle
 
     return [canShortCastle,canLongCastle];
 }
-    
+
 //all game rules added now just need to add end sequences and closing the game room
