@@ -129,13 +129,13 @@ socket.on("Orientation",(colour)=>{
     Orientation(colour);
 })
 
-socket.on("playerNames",(name1,name2)=>{
+socket.on("playerNames",(name1,name2,rating1,rating2)=>{
     
     let player1 = document.getElementById("player1")
     let player2 = document.getElementById("player2")
 
-    player1.innerHTML = name1;
-    player2.innerHTML = name2;
+    player1.innerHTML = name1 +" "+ rating1;
+    player2.innerHTML = name2 +" "+ rating2;
 })
 socket.on("swapName",()=>{
     let player1 = document.getElementById("player1")
@@ -144,6 +144,10 @@ socket.on("swapName",()=>{
     temp = player1.innerHTML;
     player1.innerHTML = player2.innerHTML;
     player2.innerHTML = temp;
+})
+
+socket.on("addOpName",()=>{
+    socket.emit("addOpName");
 })
 
 socket.on("player-disconnect",()=>{

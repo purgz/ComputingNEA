@@ -81,7 +81,10 @@ app.post("/login",(req,res)=>{
             if (results.length>0){
                 req.session.loggedIn = true;    
                 req.session.username = username;  
-                
+
+                results=JSON.parse(JSON.stringify(results))
+                req.session.rating = results[0].rating;
+                //console.log(results,results[0].rating )
                 res.redirect("/menuPage");
             } else{
                 res.send("incorrect login");
@@ -95,7 +98,7 @@ app.post("/login",(req,res)=>{
 app.post("/createaccount",(req,res)=>{              
     var username = req.body.username;              //get username and password from the form
     var password = req.body.password;
-
+    var rating = 1000;
     if (username && password){                   
         let sql1 = 'SELECT id FROM users WHERE username =?';
         let query1 = db.query(sql1,[username],(error,results)=>{
@@ -106,7 +109,7 @@ app.post("/createaccount",(req,res)=>{
                 
             } else {
                 let sql2 = 'INSERT INTO users set ?';                //insert username and password to database
-                let query2 = db.query(sql2,[{username:username,password:password}],(error,result)=>{
+                let query2 = db.query(sql2,[{username:username,password:password, rating:rating}],(error,result)=>{
                     if (error) throw error;
                     res.redirect("/")                     //redirect back to the login page
                 })
@@ -132,6 +135,13 @@ io.on("connection", (socket) => {
     const session = socket.request.session;
     session.roomname = "";
     //console.log(session.username)
+    let sql = 'SELECT rating FROM users WHERE username = ?';
+    let query = db.query(sql,[session.username],(error,result)=>{
+        //sets rating to updated value whenever someone loads onto the menu page
+        result=JSON.parse(JSON.stringify(result))
+        session.rating = result[0].rating;
+        console.log(session.username, session.rating);
+    })
     
     io.emit("NewGame",gameRooms,spectateRooms);
     socket.on("CreateGame",()=>{
@@ -190,7 +200,8 @@ gameNamespace.on("connection",(socket)=>{
         Rooms[session.roomname] = new GameRoom();
     }
     //give users their random colours
-    session.yourColour = Rooms[session.roomname].AddUsers(session.username);
+    console.log(session.rating)
+    session.yourColour = Rooms[session.roomname].AddUsers(session.username,session.rating);
     //console.log(Rooms);
 
     //initialisation emits
@@ -201,35 +212,56 @@ gameNamespace.on("connection",(socket)=>{
     //get the player1name player2name and player2colour for adding name to board
     let player1 = Rooms[session.roomname].player1;
     let player2 = Rooms[session.roomname].player2;
+    let rating1 = Rooms[session.roomname].player1rating;
+    let rating2 = Rooms[session.roomname].player2rating;
     let player2Colour = Rooms[session.roomname].player2Colour;
 
     //if the second user connects add the names to the top and bottom
     if (player2 && session.yourColour !== "spectator"){
-        gameNamespace.to(session.roomname).emit("playerNames",player1,player2);
+        gameNamespace.to(session.roomname).emit("playerNames",player1,player2,rating1,rating2);
     //if spectator joins add names then swap them if player1 is black
     } else if (session.yourColour == "spectator"){
-        gameNamespace.to(socket.id).emit("playerNames",player1,player2);
+        gameNamespace.to(socket.id).emit("playerNames",player1,player2,rating1,rating2);
         if (player2Colour == "white"){
             gameNamespace.to(socket.id).emit("swapName");
         }
     }
     //if you are second player then swap the names.
     if (session.yourColour == player2Colour){
+        gameNamespace.to(session.roomname).emit("addOpName");
         gameNamespace.to(socket.id).emit("swapName");
     }
 
     if (session.yourColour == "spectator"){
         gameNamespace.to(socket.id).emit("RemoveButtons");
     }
-    
 
+    socket.on("addOpName", ()=>{
+        if (session.username == Rooms[session.roomname].player1){
+            session.opName = Rooms[session.roomname].player2;
+        } else if (session.username == Rooms[session.roomname].player2){
+            session.opName = Rooms[session.roomname].player1;
+        } session.save();
+    })
     //handling player moves
     socket.on("move-request",(currentCell,newSquare)=>{
         //console.log(currentCell,newSquare);
         let move = Rooms[session.roomname].UpdateBoard(currentCell,newSquare,session.yourColour);
         if (move == "Checkmate"){
+            //add elo calc
+            //add actual scores of game
+        
+            SetScore(session.roomname,session.username);
+            //SetScore(session.roomname,opName);
+            session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
+            session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
+            console.log(session.updatedRatingA,session.updatedRatingB)
+            //UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
+            
             gameNamespace.to(session.roomname).emit("game-over",session.username,"Checkmate")
+
         } else if (move == "Stalemate"){
+            //add the scores and updated rating for a draw
             gameNamespace.to(session.roomname).emit("game-over",session.username,"Stalemate")
         }
         gameNamespace.to(session.roomname).emit("Render",Rooms[session.roomname].gamestate);
@@ -257,8 +289,17 @@ gameNamespace.on("connection",(socket)=>{
     })
 
     //socket emits for specific game ending types.
-    socket.on("Resign",()=>{
+    socket.on("Resign",()=>{ 
+        
+        SetScore(session.roomname,session.opName);
+        //SetScore(session.roomname,opName);
+        session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
+        session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
+        console.log(session.username + " "+session.updatedRatingA,session.opName + " "+session.updatedRatingB)
+        //UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
+        
         gameNamespace.to(session.roomname).emit("game-over",session.username,"Resign");
+        
     })
     socket.on("OfferDraw",()=>{
         socket.broadcast.to(session.roomname).emit("OfferDraw",(session.username));
@@ -279,6 +320,27 @@ server.listen(process.env.PORT || 3000,()=>{
     console.log("server is running on port 3000");
 })
 
+function SetScore(roomname,username){
+    if (Rooms[roomname].player1 == username){
+        Rooms[roomname].player1Score = 1;
+        Rooms[roomname].player2Score = 0;
+    } else if (Rooms[roomname].player2 == username){
+        Rooms[roomname].player2Score = 1;
+        Rooms[roomname].player1Score = 0;
+    }
+}
+function UpdateRatingInDb(updatedRatingA,updatedRatingB, username,opponentName){
+    let sql3 = 'UPDATE users SET rating = ? WHERE username = ?';
+    let query3 = db.query(sql3,[updatedRatingA, username],(error,result)=>{
+        if (error) throw error;
+       // console.log("Updated");
+    })
+    let sql4 = 'UPDATE users SET rating = ? WHERE username = ?';
+    let query4 = db.query(sql4,[updatedRatingB, opponentName],(error,result)=>{
+        if (error) throw error;
+        //console.log("Updated");
+    })
+}
 
 //generates the defualt board layout
 //each index represents a piece, each piece is notated as first letter - colour - second letter - piece
@@ -317,18 +379,26 @@ class GameRoom {
         this.player2LongCastle = true;
         this.player1ShortCastle = true;
         this.player2ShortCastle = true;
-
         this.enPassant;
+        //elo
+        this.player1rating;
+        this.player2rating;
+        this.player1ExpectedScore;
+        this.player2ExpectedScore;
+        this.player1Score;
+        this.player2Score;
     }
 
     //adds users to the game and gives them their session colour variables - spectators do not get colour
-    AddUsers(uname){
+    AddUsers(uname,rating){
         if (this.player1 && this.player2){
             return "spectator";
         }
+        rating = parseInt(rating);
         //randomly assinging player 1 and 2 colours white or black. spectator does not get a colour
         if (!(this.player1)){
             this.player1 = uname;
+            this.player1rating = rating;
             if (Math.floor(Math.random() * 2) == 1){
                 this.player1Colour = "white";
             } else {
@@ -337,11 +407,13 @@ class GameRoom {
             return this.player1Colour;
         } else {
             this.player2 = uname;
+            this.player2rating = rating;
             if (this.player1Colour == "white"){
                 this.player2Colour = "black";
             } else {
                 this.player2Colour = "white";
             }
+            this.ExpectedScores();
             this.turn = "white"; //initlialse the game turns.
             return this.player2Colour;
         }
@@ -553,6 +625,25 @@ class GameRoom {
         this.gamestate[oldRookSquare] = "";
         //castle successfull
         return true;
+    }
+
+    //elo rating system
+    ExpectedScores(){
+    
+        console.log(this.player1rating,this.player2rating)
+        this.player1ExpectedScore = 1/(1 + 10**((this.player2rating - this.player1rating)/400));
+        this.player2ExpectedScore = 1/(1 + 10**((this.player1rating - this.player2rating)/400));
+        //console.log(this.player1ExpectedScore,this.player2ExpectedScore);
+    }
+    UpdateRatings(name){
+        
+        if (this.player1 == name){
+            var newRating = this.player1rating + 32*(this.player1Score - this.player1ExpectedScore);
+        } else if (this.player2 == name){
+            var newRating = this.player2rating + 32*(this.player2Score - this.player2ExpectedScore);
+        }
+        console.log(newRating);
+        return newRating;
     }
 }
 
@@ -899,3 +990,4 @@ function HasCastled(currentCell,newSquare,gamestate,canShortCastle,canLongCastle
 }
 
 //all game rules added now just need to add end sequences and closing the game room
+
