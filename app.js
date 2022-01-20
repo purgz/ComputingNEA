@@ -256,7 +256,7 @@ gameNamespace.on("connection",(socket)=>{
             session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
             session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
             console.log(session.updatedRatingA,session.updatedRatingB)
-            //UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
+            UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
             
             gameNamespace.to(session.roomname).emit("game-over",session.username,"Checkmate")
 
@@ -296,7 +296,7 @@ gameNamespace.on("connection",(socket)=>{
         session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
         session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
         console.log(session.username + " "+session.updatedRatingA,session.opName + " "+session.updatedRatingB)
-        //UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
+        UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
         
         gameNamespace.to(session.roomname).emit("game-over",session.username,"Resign");
         
