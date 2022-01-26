@@ -141,11 +141,12 @@ io.on("connection", (socket) => {
         result=JSON.parse(JSON.stringify(result))
         session.rating = result[0].rating;
         console.log(session.username, session.rating);
+        io.to(socket.id).emit("ShowRating",session.rating);
         
     })
     
     io.emit("NewGame",gameRooms,spectateRooms);
-    io.to(socket.id).emit("ShowRating",session.rating);
+    
     
     socket.on("CreateGame",()=>{
         console.log("Creating game")
