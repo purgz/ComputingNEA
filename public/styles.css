@@ -10,6 +10,7 @@ img
     margin:auto;
     width:100%;
 }
+
 .square
 {
     position:relative;
@@ -229,3 +230,14 @@ user-select: none; /* supported by Chrome and Opera */
   border-radius: 10px;
 }
 
+
+
+#displayRating
+{
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding-right: 1%;
+  padding-top: 1%;
+  font-size: xx-large;
+}

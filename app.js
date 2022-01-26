@@ -141,9 +141,12 @@ io.on("connection", (socket) => {
         result=JSON.parse(JSON.stringify(result))
         session.rating = result[0].rating;
         console.log(session.username, session.rating);
+        
     })
     
     io.emit("NewGame",gameRooms,spectateRooms);
+    io.to(socket.id).emit("ShowRating",session.rating);
+    
     socket.on("CreateGame",()=>{
         console.log("Creating game")
         console.log(gameRooms)
@@ -210,6 +213,7 @@ gameNamespace.on("connection",(socket)=>{
     gameNamespace.to(socket.id).emit("Orientation",session.yourColour)
 
     //get the player1name player2name and player2colour for adding name to board
+    //get the ratings of each user at the start of the game to display on the screen
     let player1 = Rooms[session.roomname].player1;
     let player2 = Rooms[session.roomname].player2;
     let rating1 = Rooms[session.roomname].player1rating;
@@ -262,6 +266,12 @@ gameNamespace.on("connection",(socket)=>{
 
         } else if (move == "Stalemate"){
             //add the scores and updated rating for a draw
+            SetDrawScore(session.roomname,session.username);
+            session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
+            session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
+            console.log(session.updatedRatingA,session.updatedRatingB)
+            UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
+
             gameNamespace.to(session.roomname).emit("game-over",session.username,"Stalemate")
         }
         gameNamespace.to(session.roomname).emit("Render",Rooms[session.roomname].gamestate);
@@ -305,6 +315,13 @@ gameNamespace.on("connection",(socket)=>{
         socket.broadcast.to(session.roomname).emit("OfferDraw",(session.username));
     }) 
     socket.on("AcceptDraw",()=>{
+        //alter the elo if the game is a draw
+        SetDrawScore(session.roomname,session.username);
+        session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
+        session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
+        console.log(session.updatedRatingA,session.updatedRatingB)
+        UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
+
         gameNamespace.to(session.roomname).emit("game-over",session.username,"Draw");
     })
 
@@ -329,6 +346,15 @@ function SetScore(roomname,username){
         Rooms[roomname].player1Score = 0;
     }
 }
+function SetDrawScore(roomname,username){
+    if (Rooms[roomname].player1 == username){
+        Rooms[roomname].player1Score = 0.5;
+        Rooms[roomname].player2Score = 0.5;
+    } else if (Rooms[roomname].player2 == username){
+        Rooms[roomname].player2Score = 0.5;
+        Rooms[roomname].player1Score = 0.5;
+    }
+}
 function UpdateRatingInDb(updatedRatingA,updatedRatingB, username,opponentName){
     let sql3 = 'UPDATE users SET rating = ? WHERE username = ?';
     let query3 = db.query(sql3,[updatedRatingA, username],(error,result)=>{
@@ -345,13 +371,13 @@ function UpdateRatingInDb(updatedRatingA,updatedRatingB, username,opponentName){
 //generates the defualt board layout
 //each index represents a piece, each piece is notated as first letter - colour - second letter - piece
 function GenerateDefaultPosition() {
-    return ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR",
-        "bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP",
+    return ["", "", "", "", "bK", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
-        "wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
         "wR", "wN", "wB", "wQ", "wK", "wB","wN", "wR"
     ];
 }

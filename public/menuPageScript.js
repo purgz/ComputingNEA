@@ -44,3 +44,8 @@ function RenderButton(gamelist,games,type){
         gamelist.appendChild(li);   //add each element to the outputted list.
     }
 }
+
+socket.on("ShowRating",(rating)=>{
+    var container = document.getElementById("displayRating");
+    container.innerHTML = Math.floor(rating);
+})
