@@ -372,7 +372,7 @@ function UpdateRatingInDb(updatedRatingA,updatedRatingB, username,opponentName){
 //generates the defualt board layout
 //each index represents a piece, each piece is notated as first letter - colour - second letter - piece
 function GenerateDefaultPosition() {
-    return ["bR", "bB", "bN", "bQ", "bK", "bB", "bN", "bR",
+    return ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR",
         "bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
