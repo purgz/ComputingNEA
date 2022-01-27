@@ -11,5 +11,7 @@ function ValidatePassword(){
     } else {
         return true;
     }
-    return false;
+    // remove pword validation - annoying
+    //return false;
+    return true;
 }
