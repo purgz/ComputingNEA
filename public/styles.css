@@ -209,7 +209,7 @@ user-select: none; /* supported by Chrome and Opera */
   display: inline-block;
   border-radius: 10px;
 }
-#createGame{
+#createGame,#createGameTimed{
   margin-left: 20px;
 }
 

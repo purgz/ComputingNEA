@@ -140,10 +140,18 @@ socket.on("playerNames",(name1,name2,rating1,rating2)=>{
 socket.on("swapName",()=>{
     let player1 = document.getElementById("player1")
     let player2 = document.getElementById("player2")
+    let p1Counter = document.getElementById("p1Counter");
+    let p2Counter = document.getElementById("p2Counter");
 
     temp = player1.innerHTML;
     player1.innerHTML = player2.innerHTML;
     player2.innerHTML = temp;
+
+    //found an easier way of swapping
+    //swap id instead of contents -  keep integrity
+    temp = p1Counter.id;
+    p1Counter.id = p2Counter.id;
+    p2Counter.id = temp;
 })
 
 socket.on("addOpName",()=>{
@@ -178,7 +186,8 @@ socket.on("game-over",(username,type)=>{
         winnerInfo.innerHTML = username+ " resigned";
     } else if (type == "Draw"){
         winnerInfo.innerHTML = "Draw by agreement";
-
+    } else if (type == "Timeout"){
+        winnerInfo.innerHTML = username + " loses by Timeout";
     }
     document.getElementById("gameOver").style.display = "block";
     //show popup when game over
@@ -258,3 +267,16 @@ socket.on("chat",(msg,name)=>{
     var chatbox = document.getElementById("chatlist");
     chatbox.scrollTop = chatbox.scrollHeight;
 })
+
+
+//clock
+//change the appropriate timer
+socket.on('timer',  (data,player,)=>{
+    if (player == "player1"){
+        document.getElementById("p1Counter").innerHTML = data;
+    } else {
+        document.getElementById("p2Counter").innerHTML = data;
+    }
+    
+});
+

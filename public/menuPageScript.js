@@ -2,8 +2,12 @@ var socket = io();
 
 //sends request to add game room to game list
 function NewGame(){
-    socket.emit("CreateGame");
+    socket.emit("CreateGame","regular");
 }
+function NewGameTimed(){
+    socket.emit("CreateGame","Timed");
+}
+
 //sends the roomname to the server so the user can be connected to the game room
 function JoinRoom(name){
     console.log(name.id);

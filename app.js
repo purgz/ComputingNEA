@@ -18,6 +18,13 @@ const db = mysql.createConnection({
     password:"a87P$2zaY6343Ww",
     database:"chessgame"
 });
+/*
+const db = mysql.createConnection({
+    host:"localhost",
+    user:"root",
+    password:"",
+    database:"logininfo"
+});*/
 
 //connect to db and throw any errors
 db.connect(function(error){
@@ -48,22 +55,23 @@ app.use(function(req, res, next) {
 //get pages
 //displaying the first page when a user goes to application link
 app.get("/",function(req,res){
-    
     req.session.loggedIn = false;
     res.render("loginPage.ejs");
     req.session.save();
 })
 
+//access menu page if logged in
 app.get("/menuPage",(req,res)=>{
-    if (req.session.loggedIn){              //can only go to menu page if user logged in
+    if (req.session.loggedIn){              
         res.render("menuPage.ejs");
     } else {
-        res.send("login to view this page");           //if someone tries to redirect themselves they will get this message
+        res.send("login to view this page");           
     }
     req.session.save()
 });
 
-app.get("/createaccount",(req,res)=>{            //render users the create account page
+//render create account page
+app.get("/createaccount",(req,res)=>{           
     res.render("createAccount.ejs");
 })
 
@@ -71,47 +79,54 @@ app.get("/createaccount",(req,res)=>{            //render users the create accou
 //login requests
 app.post("/login",(req,res)=>{
     
-    var username = req.body.username;  //uses bodyparser to get element with name username
+    //bodyparser to get element
+    var username = req.body.username;  
     var password = req.body.password;
 
-    if (username && password){        //both username and password entered
+    //username and password field not blank
+    if (username && password){        
         let sql = 'SELECT * FROM users WHERE username = ? AND password = ?';
         let query = db.query(sql,[username,password],(error,results)=>{
-
             if (results.length>0){
                 req.session.loggedIn = true;    
                 req.session.username = username;  
-
+                //parse results
                 results=JSON.parse(JSON.stringify(results))
                 req.session.rating = results[0].rating;
-                //console.log(results,results[0].rating )
+                
                 res.redirect("/menuPage");
             } else{
                 res.send("incorrect login");
             }
         });
     } else{
-        res.redirect("/")           //if 1 entry is left blank.
+        //back to login page
+        res.redirect("/")           
     }
 });
 
-app.post("/createaccount",(req,res)=>{              
-    var username = req.body.username;              //get username and password from the form
+app.post("/createaccount",(req,res)=>{        
+    //bodyparser username and password      
+    var username = req.body.username;             
     var password = req.body.password;
+    //default rating
     var rating = 1000;
     if (username && password){                   
         let sql1 = 'SELECT id FROM users WHERE username =?';
         let query1 = db.query(sql1,[username],(error,results)=>{
             if (error) throw error;
+            //check if username is already in the database
             if (results.length > 0){
                 console.log("username is already taken")
                 res.redirect("/")
                 
             } else {
-                let sql2 = 'INSERT INTO users set ?';                //insert username and password to database
+                //insert username and password
+                let sql2 = 'INSERT INTO users set ?';                
                 let query2 = db.query(sql2,[{username:username,password:password, rating:rating}],(error,result)=>{
                     if (error) throw error;
-                    res.redirect("/")                     //redirect back to the login page
+                    //redirect to login
+                    res.redirect("/")                     
                 })
             }
         })
@@ -127,14 +142,15 @@ var gameRooms = [];  //holds the games to be displayed in menu
 var spectateRooms = []; //holds games you can watch
 var Rooms = {};     //holds the live game objects for each game
 
+//socket.io session setup - cookies for user info
 const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
 io.use(wrap(sessionMiddleware));
 
+//connect to menu page
 io.on("connection", (socket) => {
-    
     const session = socket.request.session;
     session.roomname = "";
-    //console.log(session.username)
+    
     let sql = 'SELECT rating FROM users WHERE username = ?';
     let query = db.query(sql,[session.username],(error,result)=>{
         //sets rating to updated value whenever someone loads onto the menu page
@@ -144,39 +160,43 @@ io.on("connection", (socket) => {
         io.to(socket.id).emit("ShowRating",session.rating);
         
     })
-    
+    //display all joinable games on connection
     io.emit("NewGame",gameRooms,spectateRooms);
     
-    
-    socket.on("CreateGame",()=>{
-        console.log("Creating game")
-        console.log(gameRooms)
+    //user clicks button to create game
+    socket.on("CreateGame",(type)=>{
+        //if there is already a game made by that user - cant create
         if (gameRooms.includes(session.username) || spectateRooms.includes(session.username)){
-            console.log("cant create room")
+            //prevent user connecting
             session.InGame = true;
             session.save();
         } else{
-            session.roomname = session.username.slice(); //creates copy instead of reference
+            //code for creating a room
+            session.gameType = type;
+            session.roomname = session.username.slice();
             gameRooms.push(session.username.slice());
-            console.log(gameRooms)
+            //displaying the new room to all users
             io.emit("NewGame",gameRooms,spectateRooms);
             session.save();
         }
     })
-
+    //connecting to room
     socket.on("JoinRoom",(roomName)=>{
-        console.log("joining "+roomName)
+        //set roomaname var - used in most logic
         session.roomname = roomName
+        //add gameroom to spectate if 2 users
         if (gameRooms.includes(session.roomname)){
             spectateRooms.push(session.roomname);
+            //remove from join list
             gameRooms.splice(gameRooms.indexOf(session.roomname),1)
         }
         
         io.emit("NewGame",gameRooms,spectateRooms)
-        session.save();  //means can use the session vars on multiple socket.io connections.
+        session.save();  
     });
 });
 
+//redirect to game page if the user is not in game or they are the creator
 app.get("/newGame",(req,res)=>{
     if (!req.session.InGame || (req.session.roomname == req.session.username)){
         if (req.session.loggedIn){
@@ -189,78 +209,126 @@ app.get("/newGame",(req,res)=>{
         res.send("you already have a game created on your account")
     }
 })
-//main game requests
-//keeeping the same session variables over the new page which will be the live game page.
-const gameNamespace = io.of("/livegame");
-//adding connection detection for the live game page using different namespace
-gameNamespace.use(wrap(sessionMiddleware));
-gameNamespace.on("connection",(socket)=>{
-    const session = socket.request.session;   
-    
-    socket.join(session.roomname);
 
+
+
+//namespace of live game
+const gameNamespace = io.of("/livegame");
+//session var setup
+gameNamespace.use(wrap(sessionMiddleware));
+
+//connect to game
+gameNamespace.on("connection",(socket)=>{
+
+    const session = socket.request.session;   
+
+    socket.join(session.roomname);
+    
+    
     //checks if room already exists - if not creates a new room
     if (!Rooms.hasOwnProperty(session.roomname)){
-        Rooms[session.roomname] = new GameRoom();
+        if (session.gameType == "regular"){
+            Rooms[session.roomname] = new GameRoom();
+        } else {
+            Rooms[session.roomname] = new TimedGameRoom();
+        }        
     }
-    //give users their random colours
-    console.log(session.rating)
+    
+    //user setup
     session.yourColour = Rooms[session.roomname].AddUsers(session.username,session.rating);
-    //console.log(Rooms);
 
-    //initialisation emits
+    //render and orient board
     gameNamespace.to(session.roomname).emit("Render",Rooms[session.roomname].gamestate); 
-
     gameNamespace.to(socket.id).emit("Orientation",session.yourColour)
 
-    //get the player1name player2name and player2colour for adding name to board
-    //get the ratings of each user at the start of the game to display on the screen
+    //cache playername and rating
     let player1 = Rooms[session.roomname].player1;
     let player2 = Rooms[session.roomname].player2;
     let rating1 = Rooms[session.roomname].player1rating;
     let rating2 = Rooms[session.roomname].player2rating;
     let player2Colour = Rooms[session.roomname].player2Colour;
 
-    //if the second user connects add the names to the top and bottom
+    //code for starting timers if game is timed 
     if (player2 && session.yourColour !== "spectator"){
         gameNamespace.to(session.roomname).emit("playerNames",player1,player2,rating1,rating2);
+        
+        //initialise clocks
+        //clock function is now working the the othergameroom class
+        if (Rooms[session.roomname].GetGameType() == "Timed"){
+            
+            Rooms[session.roomname].countdown = setInterval(function() {
+
+                //if your turn find what player you are and - 1 sec per sec
+                if (Rooms[session.roomname].turn == Rooms[session.roomname].player1Colour){
+                    Rooms[session.roomname].player1Time--;
+                    gameNamespace.to(session.roomname).emit('timer', Rooms[session.roomname].player1Time,"player1" );
+                } else {
+                    Rooms[session.roomname].player2Time--;
+                    gameNamespace.to(session.roomname).emit('timer', Rooms[session.roomname].player2Time,"player2" );
+                }
+
+                //check if a user has run out of time
+                if (Rooms[session.roomname].player1Time == 0){
+                    Timeout(Rooms[session.roomname].player1,Rooms[session.roomname].player2)
+                    clearInterval(Rooms[session.roomname].countdown);
+                } else if (Rooms[session.roomname].player2Time == 0){
+                    Timeout(Rooms[session.roomname].player2,Rooms[session.roomname].player1);
+                    clearInterval(Rooms[session.roomname].countdown);
+                }
+                //figues out elo for timeout
+                function Timeout(yourName, opName){
+                    
+                    SetScore(session.roomname,opName);
+                    session.updatedRatingA = Rooms[session.roomname].UpdateRatings(yourName);
+                    session.updatedRatingB = Rooms[session.roomname].UpdateRatings(opName);
+                    
+                    UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,yourName,opName);
+                    gameNamespace.to(session.roomname).emit("game-over",yourName,"Timeout");
+                }
+
+            }, 1000);
+            session.save();
+        }
+
+
     //if spectator joins add names then swap them if player1 is black
     } else if (session.yourColour == "spectator"){
+        //spectator board setup
         gameNamespace.to(socket.id).emit("playerNames",player1,player2,rating1,rating2);
         if (player2Colour == "white"){
             gameNamespace.to(socket.id).emit("swapName");
         }
     }
-    //if you are second player then swap the names.
+    //put displayed names in correct side of board
     if (session.yourColour == player2Colour){
         gameNamespace.to(session.roomname).emit("addOpName");
         gameNamespace.to(socket.id).emit("swapName");
     }
-
+    //remove draw buttons
     if (session.yourColour == "spectator"){
         gameNamespace.to(socket.id).emit("RemoveButtons");
     }
-
+    //cache op name
     socket.on("addOpName", ()=>{
+        console.log("p1p2 "+player1,player2)
         if (session.username == Rooms[session.roomname].player1){
             session.opName = Rooms[session.roomname].player2;
-        } else if (session.username == Rooms[session.roomname].player2){
+        } else if (session.username = Rooms[session.roomname].player2){
             session.opName = Rooms[session.roomname].player1;
-        } session.save();
+        } 
+        session.save();
+        
     })
     //handling player moves
     socket.on("move-request",(currentCell,newSquare)=>{
-        //console.log(currentCell,newSquare);
+      
         let move = Rooms[session.roomname].UpdateBoard(currentCell,newSquare,session.yourColour);
         if (move == "Checkmate"){
             //add elo calc
             //add actual scores of game
-        
             SetScore(session.roomname,session.username);
-            //SetScore(session.roomname,opName);
             session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
             session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
-            console.log(session.updatedRatingA,session.updatedRatingB)
             UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
             
             gameNamespace.to(session.roomname).emit("game-over",session.username,"Checkmate")
@@ -270,21 +338,28 @@ gameNamespace.on("connection",(socket)=>{
             SetDrawScore(session.roomname,session.username);
             session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
             session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
-            console.log(session.updatedRatingA,session.updatedRatingB)
             UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
 
             gameNamespace.to(session.roomname).emit("game-over",session.username,"Stalemate")
         }
+        //nested function to refactor some repeated code
+
+        //update game board
         gameNamespace.to(session.roomname).emit("Render",Rooms[session.roomname].gamestate);
         session.save();
     });
-
+    //if a user leaves
     socket.on("disconnect", () => {
         
-        if (session.yourColour == "spectator") { session.save(); return; } //stops spectator ending game
-        console.log(session.username+" leaving "+session.roomname);
+        //spectator leave doest matter
+        if (session.yourColour == "spectator") { session.save(); return; } 
         
         gameNamespace.to(session.roomname).emit("player-disconnect");
+        //if the room still exists then stop the timer loop
+        if (Rooms[session.roomname]){
+            clearInterval(Rooms[session.roomname].countdown);
+        }
+        
         delete Rooms[session.roomname];
         
         if (gameRooms.includes(session.roomname)){ //prevents removing other games from list when last player dc
@@ -301,14 +376,13 @@ gameNamespace.on("connection",(socket)=>{
 
     //socket emits for specific game ending types.
     socket.on("Resign",()=>{ 
-        
+        console.log("test "+ session.username,session.opName);
         SetScore(session.roomname,session.opName);
-        //SetScore(session.roomname,opName);
+         
         session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
         session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
-        console.log(session.username + " "+session.updatedRatingA,session.opName + " "+session.updatedRatingB)
-        UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
         
+        UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
         gameNamespace.to(session.roomname).emit("game-over",session.username,"Resign");
         
     })
@@ -316,15 +390,16 @@ gameNamespace.on("connection",(socket)=>{
         socket.broadcast.to(session.roomname).emit("OfferDraw",(session.username));
     }) 
     socket.on("AcceptDraw",()=>{
+        console.log("draw test "+ session.username, session.opName);
         //alter the elo if the game is a draw
         SetDrawScore(session.roomname,session.username);
         session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
         session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
-        console.log(session.updatedRatingA,session.updatedRatingB)
         UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
-
         gameNamespace.to(session.roomname).emit("game-over",session.username,"Draw");
     })
+
+  
 
     socket.on("chat", (msg)=>{
         gameNamespace.to(session.roomname).emit("chat",msg,session.username);
@@ -357,6 +432,7 @@ function SetDrawScore(roomname,username){
     }
 }
 function UpdateRatingInDb(updatedRatingA,updatedRatingB, username,opponentName){
+    
     let sql3 = 'UPDATE users SET rating = ? WHERE username = ?';
     let query3 = db.query(sql3,[updatedRatingA, username],(error,result)=>{
         if (error) throw error;
@@ -414,8 +490,13 @@ class GameRoom {
         this.player2ExpectedScore;
         this.player1Score;
         this.player2Score;
+
+        this.gameType = "regular";
     }
 
+    GetGameType(){
+        return this.gameType;
+    }
     //adds users to the game and gives them their session colour variables - spectators do not get colour
     AddUsers(uname,rating){
         if (this.player1 && this.player2){
@@ -554,7 +635,7 @@ class GameRoom {
             this.player2LongCastle = castlingRights[1];
         }
 
-        console.log("short castle "+this.player1ShortCastle,this.player2ShortCastle+" long castle "+this.player1LongCastle,this.player2LongCastle);
+        
         
         //checks whether the game is over by checkmate or stalemate on each move.
         return IsGameOver(this.gamestate,opponentColour,this.player1);
@@ -673,10 +754,24 @@ class GameRoom {
         return newRating;
     }
 }
+//use classes for different game variations
+class TimedGameRoom extends GameRoom {
+    constructor(){
+        super();
+        this.gameType = "Timed";
+        this.player1Time = 300;
+        this.player2Time = 300;
+        this.countdown;
+    }
+    GetGameType(){
+        return this.gameType;
+    }
+}
 
 
 //piece functions
-function RookMoves(currentCell,gamestate,yourPieces,opPieces){
+function RookMoves(currentCell,gamestate,yourPieces,
+    opPieces){
     this.gamestate = gamestate;
     this.yourPieces = yourPieces;
     this.opPieces = opPieces;
