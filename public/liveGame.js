@@ -276,7 +276,6 @@ socket.on('timer',  (data,player,)=>{
         document.getElementById("p1Counter").innerHTML = data;
     } else {
         document.getElementById("p2Counter").innerHTML = data;
-    }
-    
+    } 
 });
 

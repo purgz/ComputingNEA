@@ -5,11 +5,15 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const http = require("http");
 const { Server } = require("socket.io");
+const path = require("path");
 
 //creating server
 const app = express();
 const server = http.createServer(app); 
 const io = new Server(server);
+
+//modules
+const tools = require("./tools");
 
 //caching connection to database -- free mysql hosting
 const db = mysql.createConnection({
@@ -43,7 +47,11 @@ var sessionMiddleware = session({
 })
 app.use(sessionMiddleware);
 
-app.use(express.static("public"));
+//setting path for view and public folder
+let viewPath = path.join(__dirname, "../views");
+let publicPath = path.join(__dirname, "../public");
+app.use(express.static(publicPath));
+app.set("views", viewPath);
 
 //remove cache so pages have to be reloaded when using the back button
 app.use(function(req, res, next) {
@@ -211,7 +219,6 @@ app.get("/newGame",(req,res)=>{
 })
 
 
-
 //namespace of live game
 const gameNamespace = io.of("/livegame");
 //session var setup
@@ -223,7 +230,6 @@ gameNamespace.on("connection",(socket)=>{
     const session = socket.request.session;   
 
     socket.join(session.roomname);
-    
     
     //checks if room already exists - if not creates a new room
     if (!Rooms.hasOwnProperty(session.roomname)){
@@ -277,7 +283,7 @@ gameNamespace.on("connection",(socket)=>{
                 }
                 //figues out elo for timeout
                 function Timeout(yourName, opName){
-                    
+                    //set elo for draw
                     SetScore(session.roomname,opName);
                     session.updatedRatingA = Rooms[session.roomname].UpdateRatings(yourName);
                     session.updatedRatingB = Rooms[session.roomname].UpdateRatings(opName);
@@ -285,11 +291,9 @@ gameNamespace.on("connection",(socket)=>{
                     UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,yourName,opName);
                     gameNamespace.to(session.roomname).emit("game-over",yourName,"Timeout");
                 }
-
             }, 1000);
             session.save();
         }
-
 
     //if spectator joins add names then swap them if player1 is black
     } else if (session.yourColour == "spectator"){
@@ -399,14 +403,11 @@ gameNamespace.on("connection",(socket)=>{
         gameNamespace.to(session.roomname).emit("game-over",session.username,"Draw");
     })
 
-  
-
     socket.on("chat", (msg)=>{
         gameNamespace.to(session.roomname).emit("chat",msg,session.username);
     })
   
 });
-
 
 //start server on port 3000
 server.listen(process.env.PORT || 3000,()=>{
@@ -534,7 +535,6 @@ class GameRoom {
         newSquare -= 1;
         var opponentColour;
         
-        
         //calculate opponent colour
         if (playerColour == this.player1Colour){
             opponentColour = this.player2Colour;
@@ -555,6 +555,7 @@ class GameRoom {
             if (this.gamestate[currentCell][1] == "P"){
                 this.Promotion(currentCell,newSquare);
                 if (newSquare == currentCell + 16 || newSquare == currentCell - 16){
+                    //if a user makes a pawn move then the latest square is set to enpassant
                     this.enPassant = newSquare;
 
                 } else{
@@ -573,19 +574,12 @@ class GameRoom {
                     }
                 }
             }
-
-
             this.gamestate[newSquare] = this.gamestate[currentCell];
             this.gamestate[currentCell] = "";
 
         //deals with castling - checks if check after move then if the moves inbetween are in check, then changes players castling status on and off
         } else if(this.gamestate[currentCell][1] == "K" && !(this.playerLegalMoves.includes(newSquare)) 
             && !(CheckAfterMove(this.gamestate,playerColour,currentCell,newSquare,this.player1))){
-
-       
-           // this.OpponentLegalMoves(this.gamestate,opponentColour);
-            // works - checks king square and the intbetween squares for castling and if they are under attack then not allowed to castle.
-            //fix to make sure it works for long and short castle.
 
             //short castle
             if (newSquare == currentCell + 2){
@@ -624,22 +618,18 @@ class GameRoom {
         if (playerColour == this.player1Colour){
             this.turn = this.player2Colour;
             //remove castling rights for long and short castle as needed
-            let castlingRights = HasCastled(currentCell,newSquare,this.gamestate,this.player1ShortCastle,this.player1LongCastle,playerColour)
+            let castlingRights = tools.HasCastled(currentCell,newSquare,this.gamestate,this.player1ShortCastle,this.player1LongCastle,playerColour)
             this.player1ShortCastle = castlingRights[0];
             this.player1LongCastle = castlingRights[1];
         
         } else {
             this.turn = this.player1Colour;
-            let castlingRights = HasCastled(currentCell,newSquare,this.gamestate,this.player2ShortCastle,this.player2LongCastle,playerColour);
+            let castlingRights = tools.HasCastled(currentCell,newSquare,this.gamestate,this.player2ShortCastle,this.player2LongCastle,playerColour);
             this.player2ShortCastle = castlingRights[0];
             this.player2LongCastle = castlingRights[1];
         }
-
-        
-        
         //checks whether the game is over by checkmate or stalemate on each move.
         return IsGameOver(this.gamestate,opponentColour,this.player1);
-       
     }
 
     LegalMoves(currentCell,playerColour,gamestate){
@@ -759,8 +749,8 @@ class TimedGameRoom extends GameRoom {
     constructor(){
         super();
         this.gameType = "Timed";
-        this.player1Time = 300;
-        this.player2Time = 300;
+        this.player1Time = 30;
+        this.player2Time = 30;
         this.countdown;
     }
     GetGameType(){
@@ -768,6 +758,7 @@ class TimedGameRoom extends GameRoom {
     }
 }
 
+//could add a number of different variants easily by inheriting GameRoom
 
 //piece functions
 function RookMoves(currentCell,gamestate,yourPieces,
@@ -972,24 +963,29 @@ function PawnTakeMoves(currentCell,gamestate,opPieces,dir){
     }
     return takeMoves;
 }
-
+//function for calculating en passant moves
 function EnPassant(enPassant,currentCell,yourColour,gamestate){
     let newSquare;
-    
+    //enpassant is given a value if the previous move was a double pawn move,
+    //if a user is in correct place just after opponent double pawn move then they can enpassant
+
+    //if the selected next move is an enpassant and enpassant is a legal move
     if (currentCell + 1 == enPassant){
+        //calculate new position
         if (yourColour == "white"){
             newSquare = currentCell - 7;
         } else {
             newSquare = currentCell+9;
         }
     } else if (currentCell - 1 == enPassant){
+        //calc new position
         if (yourColour == "white"){
             newSquare =  currentCell-9;
         } else {
             newSquare = currentCell+7;
         }
     }
-    
+    //if the new square is free then allow
     if (gamestate[newSquare] == ""){
         return newSquare;
     }
@@ -1077,39 +1073,23 @@ function IsGameOver(gamestate,playerColour,roomname){
     } else {
         return "Stalemate";
     }
-    
 }
-
-//function for removing castling rights
-function HasCastled(currentCell,newSquare,gamestate,canShortCastle,canLongCastle,yourColour){
-
-    //if a king move is made remove all 
-    if (gamestate[newSquare][1] == "K"){
-        canShortCastle = false;
-        canLongCastle = false;
+//function to return whether king is in check for given gamestate
+function KingInCheck(gamestate,playerColour,roomname){
+    var king = "";
+    var opColour;
+    //calc colour
+    if (playerColour == "black"){
+        king = "bK";
+        opColour = "white";
+    } else {
+        king = "wK";
+        opColour = "black";
     }
-    
-    //add colour checker since this introduced a bug--
-    //if shortcastle remove short castle rights
-    if (gamestate[newSquare][1] == "R"){
-        if (currentCell == 7 && yourColour == "black"){
-            canShortCastle = false;
-        } else if (currentCell == 63 && yourColour == "white"){
-            canShortCastle = false;
-        }
-    }
-    //if long castle remove long castle rights
-    if (gamestate[newSquare][1] == "R"){
-        if(currentCell == 0 && yourColour == "black"){
-            canLongCastle = false;
-        } else if(currentCell == 56 && yourColour == "white"){
-            canLongCastle = false;
-        }
-    }
-    
-
-    return [canShortCastle,canLongCastle];
+    //find king and check opponent legal moves
+    var kingpos = gamestate.indexOf(king);
+    let opponentLegalMoves = Rooms[roomname].OpponentLegalMoves(gamestate,opColour);
+  
+    if (opponentLegalMoves.includes(kingpos)){ return true;}
+    return false;
 }
-
-//all game rules added now just need to add end sequences and closing the game room
-
