@@ -4,8 +4,8 @@ var socket = io();
 function NewGame(){
     socket.emit("CreateGame","regular");
 }
-function NewGameTimed(){
-    socket.emit("CreateGame","Timed");
+function NewGameTimed(time){
+    socket.emit("CreateGame","Timed",time);
 }
 
 //sends the roomname to the server so the user can be connected to the game room

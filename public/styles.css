@@ -124,6 +124,10 @@ input[type = submit]:hover{
   color: white;
 }
 
+.createGameForm{
+  display: inline-block;
+}
+
 #gameOver{
   display: none;
   position: absolute;

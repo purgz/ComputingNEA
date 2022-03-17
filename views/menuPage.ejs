@@ -13,13 +13,6 @@
         <a href = "/">Logout</a>
     </div>
     <div id = "main">
-        <form id = "createGame" action = "/newGame" onsubmit = NewGame()>
-            <input class = "button button2" value = "Create Game" type = submit>
-        </form>
-        <form id = "createGameTimed" action = "/newGame" onsubmit = NewGameTimed()>
-            <input class = "button button2" value = "5 Minute Game" type = submit>
-        </form>
-
     
         <div id = "displayRating"></div>
         <div class = "listContainer">
@@ -30,6 +23,20 @@
             <h2>Spectate</h2>
             <ul id = "spectatelist"></ul>
         </div>
+
+        <form class = "createGameForm" id = "createGame" action = "/newGame" onsubmit = NewGame()>
+            <input class = "button button2" value = "Create Game" type = submit>
+        </form>
+        <form class = "createGameForm" id = "createGameTimed" action = "/newGame" onsubmit = NewGameTimed(60)>
+            <input class = "button button2" value = "1 Minute Game" type = submit>
+        </form>
+        <form class = "createGameForm" id = "createGameTimed" action = "/newGame" onsubmit = NewGameTimed(300)>
+            <input class = "button button2" value = "5 Minute Game" type = submit>
+        </form>
+        <form class = "createGameForm" id = "createGameTimed" action = "/newGame" onsubmit = NewGameTimed(600)>
+            <input class = "button button2" value = "10 Minute Game" type = submit>
+        </form>
+
     <div id = "main">
 
     <script src="/socket.io/socket.io.js"></script>

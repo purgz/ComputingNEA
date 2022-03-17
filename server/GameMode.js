@@ -359,11 +359,11 @@ class GameRoom {
 }
 //use classes for different game variations
 class TimedGameRoom extends GameRoom {
-    constructor(){
+    constructor(time){
         super();
         this.gameType = "Timed";
-        this.player1Time = 30;
-        this.player2Time = 30;
+        this.player1Time = time;
+        this.player2Time = time;
         this.countdown;
     }
     GetGameType(){

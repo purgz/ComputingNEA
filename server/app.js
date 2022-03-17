@@ -171,7 +171,7 @@ io.on("connection", (socket) => {
     io.emit("NewGame",gameRooms,spectateRooms);
     
     //user clicks button to create game
-    socket.on("CreateGame",(type)=>{
+    socket.on("CreateGame",(type,time)=>{
         //if there is already a game made by that user - cant create
         if (gameRooms.includes(session.username) || spectateRooms.includes(session.username)){
             //prevent user connecting
@@ -180,6 +180,7 @@ io.on("connection", (socket) => {
         } else{
             //code for creating a room
             session.gameType = type;
+            session.Time = time;
             session.roomname = session.username.slice();
             gameRooms.push(session.username.slice());
             //displaying the new room to all users
@@ -235,7 +236,7 @@ gameNamespace.on("connection",(socket)=>{
         if (session.gameType == "regular"){
             Rooms[session.roomname] = new GameMode.GameRoom();
         } else {
-            Rooms[session.roomname] = new GameMode.TimedGameRoom();
+            Rooms[session.roomname] = new GameMode.TimedGameRoom(session.Time);
         }        
     }
     
@@ -444,4 +445,3 @@ function UpdateRatingInDb(updatedRatingA,updatedRatingB, username,opponentName){
         //console.log("Updated");
     })
 }
-
