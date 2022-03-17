@@ -1,4 +1,4 @@
-const tools = require("./tools");
+const moveCalc = require("./moveCalc");
 
 class GameRoom {
     //instantiate room with main attributes.
@@ -148,13 +148,13 @@ class GameRoom {
         if (playerColour == this.player1Colour){
             this.turn = this.player2Colour;
             //remove castling rights for long and short castle as needed
-            let castlingRights = tools.HasCastled(currentCell,newSquare,this.gamestate,this.player1ShortCastle,this.player1LongCastle,playerColour)
+            let castlingRights = moveCalc.HasCastled(currentCell,newSquare,this.gamestate,this.player1ShortCastle,this.player1LongCastle,playerColour)
             this.player1ShortCastle = castlingRights[0];
             this.player1LongCastle = castlingRights[1];
         
         } else {
             this.turn = this.player1Colour;
-            let castlingRights = tools.HasCastled(currentCell,newSquare,this.gamestate,this.player2ShortCastle,this.player2LongCastle,playerColour);
+            let castlingRights = moveCalc.HasCastled(currentCell,newSquare,this.gamestate,this.player2ShortCastle,this.player2LongCastle,playerColour);
             this.player2ShortCastle = castlingRights[0];
             this.player2LongCastle = castlingRights[1];
         }
@@ -179,23 +179,23 @@ class GameRoom {
         switch (piece)
         {
             case piece = "R":
-                tempMoves = tools.RookMoves(currentCell,gamestate,yourPieces,opPieces);
+                tempMoves = moveCalc.RookMoves(currentCell,gamestate,yourPieces,opPieces);
                 break;
             case piece = "B":
-                tempMoves = tools.BishopMoves(currentCell,gamestate,yourPieces,opPieces);
+                tempMoves = moveCalc.BishopMoves(currentCell,gamestate,yourPieces,opPieces);
                 break;
             case piece = "N":
-                tempMoves = tools.KnightMoves(currentCell,gamestate,opPieces);
+                tempMoves = moveCalc.KnightMoves(currentCell,gamestate,opPieces);
                 break;
             case piece = "Q":
-                tempMoves = tools.RookMoves(currentCell,gamestate,yourPieces,opPieces);
-                tempMoves = tempMoves.concat(tools.BishopMoves(currentCell,gamestate,yourPieces,opPieces));
+                tempMoves = moveCalc.RookMoves(currentCell,gamestate,yourPieces,opPieces);
+                tempMoves = tempMoves.concat(moveCalc.BishopMoves(currentCell,gamestate,yourPieces,opPieces));
                 break;
             case piece = "K":
-                tempMoves = tools.KingMoves(currentCell,gamestate,opPieces);
+                tempMoves = moveCalc.KingMoves(currentCell,gamestate,opPieces);
                 break;
             case piece = "P":
-                tempMoves = tools.PawnMoves(currentCell,gamestate,opPieces,playerColour,this.enPassant)
+                tempMoves = moveCalc.PawnMoves(currentCell,gamestate,opPieces,playerColour,this.enPassant)
                 break;  
             default:
                 break;
