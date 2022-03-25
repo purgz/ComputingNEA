@@ -11,3 +11,5 @@ app.js contains all the server side code including the login system with mysql c
 The public folder contains frontend javascript and css which can be accessed by the client.
 
 Project is deployed on heroku.
+
+Start server by directing to the server directory, then running node app.js from the terminal, or if deployed the server is started with the command start: node server/app.js in package.json.

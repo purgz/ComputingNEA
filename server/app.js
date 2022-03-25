@@ -285,10 +285,7 @@ gameNamespace.on("connection",(socket)=>{
                 function Timeout(yourName, opName){
                     //set elo for draw
                     SetScore(session.roomname,opName);
-                    session.updatedRatingA = Rooms[session.roomname].UpdateRatings(yourName);
-                    session.updatedRatingB = Rooms[session.roomname].UpdateRatings(opName);
-                    
-                    UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,yourName,opName);
+                    UpdateRating();
                     gameNamespace.to(session.roomname).emit("game-over",yourName,"Timeout");
                 }
             }, 1000);
@@ -331,18 +328,14 @@ gameNamespace.on("connection",(socket)=>{
             //add elo calc
             //add actual scores of game
             SetScore(session.roomname,session.username);
-            session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
-            session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
-            UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
+            UpdateRating();
             
             gameNamespace.to(session.roomname).emit("game-over",session.username,"Checkmate")
 
         } else if (move == "Stalemate"){
             //add the scores and updated rating for a draw
-            SetDrawScore(session.roomname,session.username);
-            session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
-            session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
-            UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
+            SetDrawScore(session.roomname);
+            UpdateRating();
 
             gameNamespace.to(session.roomname).emit("game-over",session.username,"Stalemate")
         }
@@ -382,11 +375,8 @@ gameNamespace.on("connection",(socket)=>{
     socket.on("Resign",()=>{ 
         console.log("test "+ session.username,session.opName);
         SetScore(session.roomname,session.opName);
-         
-        session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
-        session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
-        
-        UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
+        UpdateRating();
+
         gameNamespace.to(session.roomname).emit("game-over",session.username,"Resign");
         
     })
@@ -397,15 +387,21 @@ gameNamespace.on("connection",(socket)=>{
         console.log("draw test "+ session.username, session.opName);
         //alter the elo if the game is a draw
         SetDrawScore(session.roomname,session.username);
-        session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
-        session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
-        UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
+        UpdateRating();
+
         gameNamespace.to(session.roomname).emit("game-over",session.username,"Draw");
     })
 
     socket.on("chat", (msg)=>{
         gameNamespace.to(session.roomname).emit("chat",msg,session.username);
     })
+
+    //refactor update rating code
+    function UpdateRating(){
+        session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
+        session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
+        UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
+    }
   
 });
 
@@ -414,7 +410,7 @@ server.listen(process.env.PORT || 3000,()=>{
     console.log("server is running on port 3000");
 })
 
-function SetScore(roomname,username){
+function SetScore(roomname,username){ 
     if (Rooms[roomname].player1 == username){
         Rooms[roomname].player1Score = 1;
         Rooms[roomname].player2Score = 0;
@@ -423,15 +419,11 @@ function SetScore(roomname,username){
         Rooms[roomname].player1Score = 0;
     }
 }
-function SetDrawScore(roomname,username){
-    if (Rooms[roomname].player1 == username){
+function SetDrawScore(roomname){
         Rooms[roomname].player1Score = 0.5;
-        Rooms[roomname].player2Score = 0.5;
-    } else if (Rooms[roomname].player2 == username){
-        Rooms[roomname].player2Score = 0.5;
-        Rooms[roomname].player1Score = 0.5;
-    }
+        Rooms[roomname].player2Score = 0.5; 
 }
+
 function UpdateRatingInDb(updatedRatingA,updatedRatingB, username,opponentName){
     
     let sql3 = 'UPDATE users SET rating = ? WHERE username = ?';
