@@ -29,6 +29,7 @@ const db = mysql.createConnection({
     database:"logininfo"
 });*/
 
+
 //connect to db and throw any errors
 db.connect(function(error){
     if (error){

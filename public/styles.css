@@ -1,12 +1,7 @@
 
-body{
-    background-color: #c8d8e4;
-}
-
 /*styling for chess elements to create a board and pieces in the correct locations */
 img 
 {        
-    
     margin:auto;
     width:100%;
 }
@@ -17,11 +12,9 @@ img
     width: 12.5%;
     height: 0;
     padding-bottom: 12.5%;
-
     display:inline-block;
     margin: -2px;
     margin-bottom: 2px;
-   
     text-align: center;
     vertical-align: top;
     background-color: #eeeed2;
@@ -62,70 +55,11 @@ img
     width:100%;
     background-color: #f2f2f2;
     
-    
 }
 #chatlist{
     overflow-y: scroll;
     overflow-wrap:break-word;
     height: 200px;
-}
-input[type = text],input[type = password], select {
-    width: 100%;
-    padding: 5px 5px;
-    margin: 8px 0;
-    display: inline-block;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-input[type = submit]{
-  background-color: #008CBA;
-  color: white;
-  padding: 10px 15px;
-  margin-top: 5px;
-  border: none;
-  cursor: pointer;
-  width: 300px;
-  border-radius: 5px;
-}
-input[type = submit]:hover{
-  opacity: 80%;
-}
-#username,#password{
-  width: 300px;
-}
-
-.button {
-  height: 50px;
-  width: 170px;
-  
-  border: none;
-  color: white;
-  padding: 16px 32px;
-
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  
-  transition-duration: 0.4s;
-  cursor: pointer;
-  border-radius: 10px;
-  
-}
-.button2 {
-  background-color: white; 
-  color: black; 
-  border: 2px solid #008CBA;
-}
-
-.button2:hover {
-  background-color: #008CBA;
-  color: white;
-}
-
-.createGameForm{
-  display: inline-block;
 }
 
 #gameOver{
@@ -151,97 +85,68 @@ user-select: none; /* supported by Chrome and Opera */
 -ms-user-select: none; /* Internet Explorer/Edge */
 }
 
+/*aesthetic*/
+body{
+  
 
-
-/* The sidenav */
-.sidenav {
-    height: 100%;
-    width: 200px;
-    position: fixed;
-    z-index: 1;
-    top: 0;
-    left: 0;
-    background-color: #2b6777;
-    overflow-x: hidden;
-    padding-top: 20px;
-  }
-  
-  
-  /* The navigation menu links */
-  .sidenav a {
-    padding: 8px 8px 8px 32px;
-    text-decoration: none;
-    font-size: 25px;
-    color: #818181;
-    display: block;
-    transition: 0.3s;
-  }
-  
-  /* When you mouse over the navigation links, change their color */
-  .sidenav a:hover {
-    color: #f1f1f1;
-  }
-  
-  /* Position and style the close button (top right corner) */
-  .sidenav .closebtn {
-    position: absolute;
-    top: 0;
-    right: 25px;
-    font-size: 36px;
-    margin-left: 50px;
-  }
-  
-  /* Style page content - use this if you want to push the page content to the right when you open the side navigation */
-  #main {
-    margin-left: 200px;
-  }
-  
-  /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
-  @media screen and (max-height: 450px) {
-    .sidenav {padding-top: 15px;}
-    .sidenav a {font-size: 18px;}
-  }
-
-.listContainer{
-  min-width: 200px;
-  width: 40%;
-  height: 200px;
-  background-color:#f1f1f1;
-  overflow-y: scroll;
-  margin-top: 20px;
-  margin-left: 20px;
-  display: inline-block;
-  border-radius: 10px;
-}
-#createGame,#createGameTimed{
-  margin-left: 20px;
+  background-color: #c8d8e4;
+  padding: 0;
+  margin: 0;
 }
 
-/* width */
-::-webkit-scrollbar {
-  width: 20px;
+#menuPage{
+  font-family: 'Courier New', Courier, monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-/* Track */
-::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px grey;
-  border-radius: 10px;
+.header{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: grey;
 }
 
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: gray;
-  border-radius: 10px;
+.footer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: grey;
 }
 
+#menuPage .main{
+  flex: 1;
+  display: flex;
+}
+.sidebar{
+  padding: 10px;
+  display: flex;
+  width: 200px;
+  flex-shrink: 0;
+  flex-direction: column;
+  background-color: lightgrey;
+  gap: 25px;
+  font-size: 24px;
+  box-sizing: border-box;
+}
 
+.sidebar a{
+  text-decoration: none;
+  transition: 300ms;
+}
+.sidebar a:hover{
+  color: white;
+}
 
-#displayRating
-{
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding-right: 1%;
-  padding-top: 1%;
-  font-size: xx-large;
+#menuPage .menu{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.list-wrappers{
+  display: flex;
+  justify-content: space-around;
 }
