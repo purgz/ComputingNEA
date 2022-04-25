@@ -11,14 +11,16 @@
     <div id = "menuPage">
     
         <div class = "header">
-            <h1>Pog Chess</h1>
-        </div>
-
-        <div class = "main">
-            <div class = "sidebar">
+            <h1 class = "title">Pog Chess</h1>
+            
+            <div class = "links">
                 <a href="https://github.com/purgz/ComputingNEA" target="_blank" rel="noopener noreferrer">Source code</a>
                 <a href = "/">Logout</a>
             </div>
+        </div>
+
+        <div class = "main">
+
     
             <div class = "menu">
                 <div id = "displayRating"></div>
@@ -33,19 +35,35 @@
                         <ul id = "spectatelist"></ul>
                     </div>
                 </div>
+                <div id = "modalButtonWrapper">
+                    <button id = "openModal">Create Game</button>
+                </div>
 
+                
+
+                <div id = "createGameModal" class = "modal">
+                    <div class = "modalContent">
+
+                        <button class = "exit">x</button>
+
+                        <form class = "createGameForm" id = "createGame" action = "/newGame" onsubmit = NewGame()>
+                            <input class = "button button2" value = "No time limit" type = submit>
+                        </form>
+
+                        <p id = "displayTime">15 Minutes</p>
+                        <input type="range" min = "1" max = "60"  id="time">
+                        <form class = "createGameForm" id = "createGameTimed" action = "/newGame" onsubmit = NewGameTimed()>
+                            <input class = "button button2" value = "Timed game" type = submit>
+                        </form>
+                       
+                        
+                    </div>
+
+
+                </div>
         
-                <form class = "createGameForm" id = "createGame" action = "/newGame" onsubmit = NewGame()>
-                    <input class = "button button2" value = "Create Game" type = submit>
-                </form>
-                <form class = "createGameForm" id = "createGameTimed" action = "/newGame" onsubmit = NewGameTimed(60)>
-                    <input class = "button button2" value = "1 Minute Game" type = submit>
-                </form>
-                <form class = "createGameForm" id = "createGameTimed" action = "/newGame" onsubmit = NewGameTimed(300)>
-                    <input class = "button button2" value = "5 Minute Game" type = submit>
-                </form>
-                <form class = "createGameForm" id = "createGameTimed" action = "/newGame" onsubmit = NewGameTimed(600)>
-                    <input class = "button button2" value = "10 Minute Game" type = submit>
+
+                
                 </form>
             </div>
         </div>

@@ -1,10 +1,34 @@
 var socket = io();
 
+//button popup for game modes
+const openModal = document.querySelector("#openModal");
+const modal = document.querySelector("#createGameModal")
+const closeModal = document.querySelector(".exit");
+
+openModal.addEventListener("click",()=>{
+    modal.style.display = "flex";
+})
+closeModal.addEventListener("click",()=>{
+    modal.style.display = "none";
+})
+
+const timeSelect = document.querySelector("#time");
+const timeDisplay = document.querySelector("#displayTime")
+timeSelect.value = 15;
+timeDisplay.textContent = `${timeSelect.value} Minutes`
+
+timeSelect.addEventListener("input",()=>{
+    timeDisplay.textContent = `${timeSelect.value} Minutes`
+})
+
 //sends request to add game room to game list
 function NewGame(){
     socket.emit("CreateGame","regular");
 }
-function NewGameTimed(time){
+function NewGameTimed(){
+    //gets value user inputted
+    let time = timeSelect.value;
+    time *= 60;
     socket.emit("CreateGame","Timed",time);
 }
 
@@ -53,3 +77,4 @@ socket.on("ShowRating",(rating)=>{
     var container = document.getElementById("displayRating");
     container.innerHTML = Math.floor(rating);
 })
+
