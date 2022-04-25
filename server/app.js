@@ -401,6 +401,7 @@ gameNamespace.on("connection",(socket)=>{
     function UpdateRating(){
         session.updatedRatingA = Rooms[session.roomname].UpdateRatings(session.username);
         session.updatedRatingB = Rooms[session.roomname].UpdateRatings(session.opName);
+        
         UpdateRatingInDb(session.updatedRatingA,session.updatedRatingB,session.username,session.opName);
     }
   
@@ -428,6 +429,7 @@ function SetDrawScore(roomname){
 function UpdateRatingInDb(updatedRatingA,updatedRatingB, username,opponentName){
     
     let sql3 = 'UPDATE users SET rating = ? WHERE username = ?';
+    
     let query3 = db.query(sql3,[updatedRatingA, username],(error,result)=>{
         if (error) throw error;
        // console.log("Updated");

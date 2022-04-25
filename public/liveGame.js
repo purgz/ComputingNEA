@@ -111,7 +111,7 @@ function Orientation(colour){
     if (colour == "black")
     {
         document.getElementsByClassName("board")[0].style.transform = "rotate(180deg)";
-        document.getElementById("gameOver").style.transform = "rotate(180deg)";
+        //document.getElementById("gameOver").style.transform = "rotate(180deg)";
         for (var i = 0; i < cells.length;i++)
         {
             cells[i].style.transform = "rotate(180deg)";
@@ -279,3 +279,7 @@ socket.on('timer',  (data,player,)=>{
     } 
 });
 
+const exitbtn = document.querySelector(".exit")
+exitbtn.addEventListener("click",()=>{
+    document.querySelector("#gameOver").style.display = "none";
+})

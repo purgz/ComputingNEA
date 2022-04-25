@@ -8,15 +8,33 @@
     <link rel = "stylesheet" href = "styles.css">
 </head>
 <body>
-    <div>
-        <form  action = "/createaccount" method = "POST" onsubmit="ValidatePassword()">
-            <label>Username:</label><br>
-            <input type="text" id="username" placeholder = "Create username" name="username"><br>
-            <label>Password:</label><br>
-            <input type="password" id="password" placeholder = "Create password" name="password"><br>
-            <input type="submit" value="Submit" >
-        </form>
+    <div class = "login">
+        <div class = "header">
+            <h1 class = "title">Pog Chess</h1>
+            
+            <div class = "links">
+                <a href="https://github.com/purgz/ComputingNEA" target="_blank" rel="noopener noreferrer">Source code</a>
+            </div>
+        </div>
+
+        <div class = "login-form-wrapper">
+            <div class = "login-form">
+                <form class = "main-form" action = "/createaccount" method = "POST" onsubmit="ValidatePassword()">
+                    <h1 class = "title">Create Account</h1>
+                    <input type="text" id="username" placeholder = "Create username" name="username"><br>
+                   
+                    <input type="password" id="password" placeholder = "Create password" name="password"><br>
+                    <input class = "submit" type="submit" value="Create" >
+                </form>
+
+            </div>
+        </div>
+        <div class = "footer">
+            <p>Henry Brooks - OCR nea project</p>
+        </div>
     </div> 
+
+
     <script src = "accountvalidation.js"></script>
 </body>
 </html>
