@@ -15,3 +15,4 @@ Project is deployed on heroku.
 Start server by directing to the server directory, then running node app.js from the terminal, or if deployed the server is started with the command start: node server/app.js in package.json.
 
 **Added some improved css styling to pages after coursework completion**
+https://chess-hb.herokuapp.com/
