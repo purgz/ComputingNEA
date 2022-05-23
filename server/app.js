@@ -16,10 +16,10 @@ const io = new Server(server);
 
 //caching connection to database -- free mysql hosting
 const db = mysql.createConnection({
-    host:"db4free.net",
-    user:"henry12345",
-    password:"a87P$2zaY6343Ww",
-    database:"chessgame"
+    host:"remotemysql.com",
+    user:"RLkSuyT2jN",
+    password:"OujzgvJnPr",
+    database:"RLkSuyT2jN"
 });
 /*
 const db = mysql.createConnection({
@@ -28,7 +28,15 @@ const db = mysql.createConnection({
     password:"",
     database:"logininfo"
 });*/
-
+/*
+CREATE TABLE users (
+	id int NOT NULL AUTO_INCREMENT,
+	username varchar(255) NOT NULL,
+	password varchar(255) NOT NULL,
+    rating varchar(255) NOT NULL,
+	PRIMARY KEY (id)
+);
+*/
 
 //connect to db and throw any errors
 db.connect(function(error){
