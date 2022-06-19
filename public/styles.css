@@ -360,3 +360,7 @@ ul{
   justify-content: center;
   gap: 100px;
 }
+
+#OfferDraw{
+  display: none;
+}

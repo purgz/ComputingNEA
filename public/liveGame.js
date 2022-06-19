@@ -18,7 +18,7 @@ const bPawn = '<img id = "black pawn" draggable = "true" class = "piece black" s
 //-------------------------------------------------------------------------------------------------------------
 
 var cells = document.getElementsByClassName("square");
-
+const drawBtn = document.querySelector("#OfferDraw");
 var newSquare;
 var currentCell;
 
@@ -136,6 +136,9 @@ socket.on("playerNames",(name1,name2,rating1,rating2)=>{
 
     player1.innerHTML = name1 +" "+ rating1;
     player2.innerHTML = name2 +" "+ rating2;
+
+    //add the buttons for draw/resign once 2 users in 
+    drawBtn.style.display = "block";
 })
 socket.on("swapName",()=>{
     let player1 = document.getElementById("player1")

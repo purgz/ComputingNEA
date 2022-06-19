@@ -15,7 +15,8 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 //caching connection to database -- free mysql hosting
-const db = mysql.createConnection({
+const db = mysql.createPool({
+    connectionLimit:10,
     host:"remotemysql.com",
     user:"RLkSuyT2jN",
     password:"OujzgvJnPr",
@@ -37,14 +38,14 @@ CREATE TABLE users (
 	PRIMARY KEY (id)
 );
 */
-
+/*
 //connect to db and throw any errors
 db.connect(function(error){
     if (error){
         throw error;
     }
     console.log("connected to database");
-});
+});*/
 
 app.set("view-engine","ejs"); //using ejs templating engine to display dynamic pages 
 //bodyparser middleware
@@ -103,6 +104,7 @@ app.post("/login",(req,res)=>{
     if (username && password){        
         let sql = 'SELECT * FROM users WHERE username = ? AND password = ?';
         let query = db.query(sql,[username,password],(error,results)=>{
+            if (error) throw error;
             if (results.length>0){
                 req.session.loggedIn = true;    
                 req.session.username = username;  
