@@ -1,4 +1,6 @@
-
+*{
+  box-sizing: border-box;
+}
 /*styling for chess elements to create a board and pieces in the correct locations */
 img 
 {        
@@ -33,6 +35,8 @@ img
 }
 
 #boardwrapper{
+  width: 800px;
+  min-width: 400px;
   display: flex;
   flex-direction: column;
 }
@@ -81,28 +85,37 @@ img
 }
 
 .container{
-    
+    margin: 0;
+    padding: 0;
     min-width: 200px;
     width: 30%;
     display: inline-block;
-    padding-top: 20px;
-    padding-left: 20px;
     vertical-align: top;
     
 }
 #chatwrapper{
     width:100%;
-    background-color: #f2f2f2;
-    
+    background-color: #3feee6;
+    border-radius: 5px;
 }
 #chatlist{
     overflow-y: scroll;
     overflow-wrap:break-word;
-    height: 200px;
+    height: 600px;
 }
-
-
-
+#input{
+  width: 70%;
+  margin-bottom: 10px;
+}
+#sendchat{
+  width: 25%;
+}
+#header,#form,#messages{
+  padding-left: 10px;
+}
+#header{
+  padding-top: 10px;
+}
 
 /*disables people highlighting the squares */
 .disable-select 
@@ -213,7 +226,7 @@ body{
 }
 
 /*Hide scrollbar for chrome safari and opera*/
-.listContainer::-webkit-scrollbar{
+::-webkit-scrollbar{
   display: none;
 }
 /* Hide scrollbar for IE, Edge and Firefox */
@@ -357,6 +370,8 @@ ul{
 
 #game-page #main{
   display: flex;
+  flex: 1;
+  padding-top: 150px;
   justify-content: center;
   gap: 100px;
 }
